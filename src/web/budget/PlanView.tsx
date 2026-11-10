@@ -16,6 +16,7 @@ import { line_title, line_tree, parent_ids, type BudgetLine, type LineNode, type
 import type { BudgetPlan } from "../../shared/budget/store.ts";
 import { calls, use_data } from "../api.ts";
 import { Amount, attempt, BudgetPage, type BudgetContext, type Money } from "./common.tsx";
+import { open_versions } from "./HistoryView.tsx";
 
 // ── Rows ─────────────────────────────────────────────────────────────────────
 
@@ -101,6 +102,7 @@ function line_menu(row: PlanRow, on_add: (parent_id: string) => void) {
     { label: "Move down", hint: "Alt+↓", disabled: !can("down"), run: () => move_line(row, "down") },
     { label: "Move under the line above", hint: "Alt+→", disabled: !can("indent"), run: () => move_line(row, "indent") },
     { label: "Move out of its parent", hint: "Alt+←", disabled: !can("outdent"), run: () => move_line(row, "outdent") },
+    { label: "History…", separator_before: true, run: () => open_versions("line", row.line.id, line_title(row.line), row.money) },
     { label: "Delete", danger: true, separator_before: true, run: () => delete_line(row) },
   ];
 }

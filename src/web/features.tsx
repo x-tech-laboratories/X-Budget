@@ -5,7 +5,8 @@
 import type { ReactNode } from "react";
 import type { SettingsSection } from "@x-tech-laboratories/x-libs/web/react/layout";
 
-import { plan_settings, report_settings } from "./budget/BudgetSettings.tsx";
+import { history_settings, plan_settings, report_settings } from "./budget/BudgetSettings.tsx";
+import { HistoryView } from "./budget/HistoryView.tsx";
 import { PlanView } from "./budget/PlanView.tsx";
 import { ReportView } from "./budget/ReportView.tsx";
 import { TransactionsView } from "./budget/TransactionsView.tsx";
@@ -29,4 +30,5 @@ export const page_features: PageFeature[] = [
   { id: "plan", label: "Plan", view: () => <PlanView />, settings: plan_settings },
   { id: "transactions", label: "Transactions", view: () => <TransactionsView />, settings: () => [] },
   { id: "report", label: "Report", view: () => <ReportView />, settings: report_settings },
+  { id: "history", label: "History", view: () => <HistoryView />, settings: history_settings },
 ];

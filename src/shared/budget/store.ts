@@ -26,6 +26,7 @@ import {
   type RollupMode,
   type TrendMonth,
 } from "./model.ts";
+import { budget_histories, line_history, list_recent_versions, transaction_history, type BudgetVersion, type LineVersion, type TransactionVersion } from "./history.ts";
 import { read_trilium_budget, write_trilium_budget } from "./trilium.ts";
 
 // ── Shapes ───────────────────────────────────────────────────────────────────
@@ -189,6 +190,7 @@ export const budget_feature = define_feature({
     { name: "budget_lines", key_columns: ["id"] },
     { name: "budget_transactions", key_columns: ["id"] },
   ],
+  histories: budget_histories,
   methods: {
     list_budgets: (database: SqlDatabase): BudgetSummary[] =>
       plain<BudgetSummary>(
@@ -302,6 +304,21 @@ export const budget_feature = define_feature({
       const transactions = plain<BudgetTransaction>(database.prepare(`SELECT ${transaction_columns} FROM budget_transactions WHERE budget_id = ? ORDER BY date, rowid`).all(budget_id));
       return write_trilium_budget(list_lines(database, budget_id), transactions);
     },
+
+    // ── History ──
+
+    list_line_versions: (database: SqlDatabase, line_id: string): LineVersion[] =>
+      line_history.read_versions(database, line_id).map((version) => ({ ...version, item: "line" })),
+
+    list_transaction_versions: (database: SqlDatabase, transaction_id: string): TransactionVersion[] =>
+      transaction_history.read_versions(database, transaction_id).map((version) => ({ ...version, item: "transaction" })),
+
+    list_budget_changes: (database: SqlDatabase, budget_id: string, limit: number): BudgetVersion[] => list_recent_versions(database, budget_id, limit),
+
+    // A deleted line comes back with the lines deleted along with it.
+    restore_line_version: (database: SqlDatabase, version_id: string): void => line_history.restore(database, version_id),
+
+    restore_transaction_version: (database: SqlDatabase, version_id: string): void => transaction_history.restore(database, version_id),
 
     // A file becomes a new budget, so importing never replaces one already here.
     import_budget: (database: SqlDatabase, name: string, text: string): ImportedBudget =>
