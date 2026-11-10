@@ -3,6 +3,8 @@
 
 // ── Imports ──────────────────────────────────────────────────────────────────
 
+import { LoginNeeded } from "@x-tech-laboratories/x-libs/web/states";
+
 import { budget_bridge, type PageApi } from "../../shared/bridge.ts";
 
 // ── Server calls ─────────────────────────────────────────────────────────────
@@ -10,23 +12,19 @@ import { budget_bridge, type PageApi } from "../../shared/bridge.ts";
 // Relative, so a server behind a proxy under a folder keeps it.
 const call_path = "api/call/";
 const events_path = "api/events";
-const login_path = "login";
 const client_id_header = "x-client-id";
 
 // Given by the server when the page connects, so the page is not told about its own changes.
 let client_id = "";
 
-// A signed-out page goes to the login page rather than showing stale data.
+// A signed-out page shows the sign-in form, which listens for LoginNeeded, rather than stale data.
 async function call_server(method: string, args: unknown[]): Promise<unknown> {
   const response = await fetch(call_path + method, {
     method: "POST",
     headers: { "content-type": "application/json", [client_id_header]: client_id },
     body: JSON.stringify(args),
   });
-  if (response.status === 401) {
-    location.assign(login_path);
-    throw new Error("signed out");
-  }
+  if (response.status === 401) throw new LoginNeeded();
   if (!response.ok) throw new Error(await response.text());
   const text = await response.text();
   return text === "" ? undefined : JSON.parse(text);

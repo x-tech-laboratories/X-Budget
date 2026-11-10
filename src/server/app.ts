@@ -5,7 +5,8 @@
 import fastify, { type FastifyInstance } from "fastify";
 import { EventStream } from "@x-tech-laboratories/x-libs/server/events";
 import { BAD_JSON, register_error_replies, register_lenient_json_body, send_text } from "@x-tech-laboratories/x-libs/server/replies";
-import { register_token_sign_in } from "@x-tech-laboratories/x-libs/server/sign_in";
+import { register_accounts } from "@x-tech-laboratories/x-libs/server/account_sign_in";
+import type { AccountStore } from "@x-tech-laboratories/x-libs/server/account_store";
 import { register_sync_routes } from "@x-tech-laboratories/x-libs/server/sync_routes";
 import { register_web_folder } from "@x-tech-laboratories/x-libs/server/web_folder";
 import type { SqlDatabase } from "@x-tech-laboratories/x-libs/sql";
@@ -17,8 +18,8 @@ import { bind_methods, is_read_only, sync_engine } from "../shared/store.ts";
 
 export interface AppOptions {
   database: SqlDatabase;
-  // The secret browsers sign in with and devices sync with; empty leaves the server open, which is only allowed on this machine.
-  secret: string;
+  // Who may sign in: browsers with a session, and devices that sync with a token of their own.
+  accounts: AccountStore;
   web_folder: string;
   // Saves a copy of the database before a device's data replaces it.
   back_up: () => void;
@@ -30,7 +31,7 @@ export async function build_app(options: AppOptions): Promise<FastifyInstance> {
   const app = fastify({ forceCloseConnections: true });
   register_lenient_json_body(app);
   register_error_replies(app);
-  await register_token_sign_in(app, { secret: options.secret, title: "X-Budget" });
+  await register_accounts(app, { accounts: options.accounts, cookie_name: "x_budget_session" });
 
   const changes = new EventStream();
   const database = () => options.database;

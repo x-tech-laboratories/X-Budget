@@ -29,7 +29,8 @@ buildNpmPackage {
 
     npm prune --omit=dev --no-save --ignore-scripts
     mkdir -p $out/lib/x-budget-desktop
-    cp -r out package.json node_modules $out/lib/x-budget-desktop/
+    cp -r out resources package.json node_modules $out/lib/x-budget-desktop/
+    install -Dm644 resources/icon.svg $out/share/icons/hicolor/scalable/apps/x-budget.svg
     makeWrapper ${lib.getExe electron_43} $out/bin/x-budget-desktop \
       --add-flags $out/lib/x-budget-desktop \
       --unset ELECTRON_RUN_AS_NODE
@@ -43,6 +44,7 @@ buildNpmPackage {
       desktopName = "X-Budget";
       comment = "Budgets, monthly transactions and reports";
       exec = "x-budget-desktop";
+      icon = "x-budget";
       categories = [ "Utility" ];
     })
   ];

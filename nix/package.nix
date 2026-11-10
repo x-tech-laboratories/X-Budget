@@ -31,6 +31,9 @@ buildNpmPackage {
       --add-flags "--disable-warning=ExperimentalWarning $out/lib/x-budget/src/server/main.ts" \
       --set-default NODE_ENV production
 
+    makeWrapper ${lib.getExe nodejs_24} $out/bin/x-budget-hash-password \
+      --add-flags "--disable-warning=ExperimentalWarning $out/lib/x-budget/src/server/hash_password.ts"
+
     runHook postInstall
   '';
 
