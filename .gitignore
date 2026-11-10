@@ -1,0 +1,8 @@
+.claude/
+node_modules
+out/
+dist/
+result
+result-*
+*.tsbuildinfo
+dev-data/
