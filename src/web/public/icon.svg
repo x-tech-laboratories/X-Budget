@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- A wallet with its clasp cut out of the X-Tech hexagon, at the same margin as the X-Tech icon. -->
+  <title>X-Budget</title>
+  <mask id="cut">
+    <rect width="64" height="64" fill="#fff"/>
+    <path fill="#000" d="M16 24.5A3.5 3.5 0 0 1 19.5 21H42L44 24.5H44.5A3.5 3.5 0 0 1 48 28V42.5A3.5 3.5 0 0 1 44.5 46H19.5A3.5 3.5 0 0 1 16 42.5Z"/>
+    <path fill="#fff" d="M37 31H48V39H37A4 4 0 0 1 37 31Z"/>
+    <circle fill="#000" cx="38.5" cy="35" r="2"/>
+    <path fill="#fff" d="M19 24.5H43V25.8H19Z"/>
+  </mask>
+  <path fill="#0088ff" mask="url(#cut)" d="M63 32 47.5 58.847 16.5 58.847 1 32 16.5 5.153 47.5 5.153Z"/>
+</svg>

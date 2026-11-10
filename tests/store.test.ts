@@ -14,8 +14,8 @@ describe("store", () => {
   it("records each feature's schema version and opens again without redoing a step", () => {
     const database = open_database();
     open_store(database);
-    const versions = database.prepare("SELECT feature, version FROM schema_versions WHERE feature = 'settings'").all().map((row) => ({ ...row }));
-    expect(versions).toEqual([{ feature: "settings", version: 1 }]);
+    const versions = database.prepare("SELECT owner, version FROM schema_versions WHERE owner = 'settings'").all().map((row) => ({ ...row }));
+    expect(versions).toEqual([{ owner: "settings", version: 1 }]);
   });
 
   it("keeps settings as JSON and lays the defaults under them on the page", () => {

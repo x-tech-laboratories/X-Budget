@@ -3,7 +3,7 @@
 
 // ── Imports ──────────────────────────────────────────────────────────────────
 
-import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 
@@ -11,7 +11,8 @@ import { app, BrowserWindow, ipcMain, nativeTheme, screen, shell } from "electro
 import { bring_to_front, hold_single_instance } from "@x-tech-laboratories/x-libs/electron/app";
 import type { IpcMainEventLike } from "@x-tech-laboratories/x-libs/electron/bridge";
 import { create_window, is_app_page } from "@x-tech-laboratories/x-libs/electron/window";
-import { create_sync_client, type SyncConfig, type SyncStorage } from "@x-tech-laboratories/x-libs/sync_client";
+import { create_sync_client, sync_device_methods } from "@x-tech-laboratories/x-libs/sync_client";
+import { file_sync_storage } from "@x-tech-laboratories/x-libs/sync_file_storage";
 
 import { device_bridge, budget_bridge, budget_events } from "../shared/bridge.ts";
 import { bind_methods, open_store, sync_engine } from "../shared/store.ts";
@@ -43,23 +44,10 @@ function announce_change(): void {
 
 // ── Sync ─────────────────────────────────────────────────────────────────────
 
-const sync_file = join(profile, "sync.json");
-
-// Only this user can read the file, since it holds the token.
-const sync_storage: SyncStorage = {
-  read_config: () => (existsSync(sync_file) ? (JSON.parse(readFileSync(sync_file, "utf8")) as SyncConfig) : null),
-  write_config: (config) => {
-    writeFileSync(sync_file, JSON.stringify(config, null, 2), { mode: 0o600 });
-    chmodSync(sync_file, 0o600);
-  },
-  remove_config: () => rmSync(sync_file, { force: true }),
-  back_up_before_download: back_up,
-};
-
 const sync = create_sync_client({
   engine: sync_engine,
   database: () => database,
-  storage: sync_storage,
+  storage: file_sync_storage({ file: join(profile, "sync.json"), back_up_before_download: back_up }),
   data_name: "budget data",
   on_remote_change: announce_change,
   on_status: (status) => budget_events.emit(BrowserWindow.getAllWindows(), "sync_status", status),
@@ -76,6 +64,7 @@ function open_window(): BrowserWindow {
   return create_window(BrowserWindow, {
     ...page,
     title: "X-Budget",
+    icon: join(import.meta.dirname, "../../resources/icon.png"),
     // electron-vite emits an ESM preload as .mjs; loading .js here silently yields no bridge.
     preload: join(import.meta.dirname, "../preload/index.mjs"),
     default_size: { width: 1100, height: 760 },
@@ -102,16 +91,7 @@ function show_existing_window(): void {
 if (hold_single_instance(app, show_existing_window)) {
   void app.whenReady().then(() => {
     budget_bridge.handle(ipcMain, bind_methods(() => database, announce_change), { trusted, envelopes: true });
-    device_bridge.handle(
-      ipcMain,
-      {
-        get_sync_status: sync.get_status,
-        connect_sync: sync.connect,
-        disconnect_sync: sync.disconnect,
-        sync_now: sync.sync_now,
-      },
-      { trusted, envelopes: true },
-    );
+    device_bridge.handle(ipcMain, sync_device_methods(sync), { trusted, envelopes: true });
     open_window();
     sync.start();
   });

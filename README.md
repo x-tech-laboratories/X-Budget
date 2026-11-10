@@ -20,6 +20,7 @@ add-on and reads and writes its JSON, so a budget moves between the two.
 ```sh
 nix-shell                 # Node 24 and an Electron that runs on NixOS
 npm install
+npm run hash-password -- admin dev-data/password.hash   # the first admin, asked for a password
 npm run dev:server        # the server on http://127.0.0.1:7740, with the data in dev-data/
 npm run dev:web           # the page with live reload, reaching that server
 npm run dev               # the desktop app, with its profile in dev-data/desktop
@@ -39,16 +40,23 @@ The server reads a JSON file named by `X_BUDGET_CONFIG`; `config.example.json` i
 | `backups_folder` | where a copy goes before a device's data replaces it      |
 
 The address and port come from `X_BUDGET_HOST` and `X_BUDGET_PORT` (or `--host` and `--port`), 127.0.0.1:7740 unless
-set. The token browsers sign in with and devices sync with is read from the file `X_BUDGET_TOKEN_FILE` names; without
-one the server only listens on this machine. `x-budget --help` lists every option.
+set. `x-budget --help` lists every option.
+
+## Signing in
+
+The browser signs in with a name and password. The admins are the `name:hash` lines in the file
+`X_BUDGET_PASSWORD_HASH_FILE` names, each added with `npm run hash-password -- <name> <file>`, which asks for the
+password rather than taking it on the command line. An admin adds everyone else on the **Your account** page, where each
+user also changes their password, turns on a second factor, and ends sessions and device tokens.
 
 The currency, locale, decimal places, how parent lines add up and how many months the trend shows are set in the app
 under **Settings**, and sync to every device.
 
 ## Sync
 
-In the desktop or Android app, open **Settings → This device → Sync**, enter the server's address and token, and choose
-whether this device starts from the server's data or the server from this device's. The copy that loses is backed up
+In the desktop or Android app, open **Settings → This device → Sync**, enter the server's address, your name and
+password, and choose whether this device starts from the server's budgets or the server from this device's. The device
+keeps a token of its own, which **Your account** can revoke. The copy that loses is backed up
 first. After that, changes go both ways within seconds, and a device that is offline catches up once it is back.
 
 ## Moving from Trilium
@@ -65,11 +73,12 @@ inputs.x-budget.url = "github:x-tech-laboratories/X-Budget";
 imports = [ x-budget.nixosModules.default ];
 services.x-budget = {
   enable = true;
-  tokenFile = "/etc/x-budget/token";
+  adminsFile = "/var/lib/secrets/x-budget-admins";
 };
 ```
 
-`packages.default` is the server and `packages.desktop` the desktop app.
+`packages.default` is the server, with `x-budget-hash-password` for the admins file, and `packages.desktop` the
+desktop app.
 
 ## Layout
 

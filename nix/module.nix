@@ -51,13 +51,11 @@ in
       description = "Open the port in the firewall.";
     };
 
-    tokenFile = mkOption {
-      type = types.nullOr types.str;
-      default = null;
-      example = "/etc/x-budget/token";
+    adminsFile = mkOption {
+      type = types.str;
       description = ''
-        File holding the token browsers sign in with and devices sync with. Without one the server only listens on
-        this machine.
+        File of `name:hash` lines for the admins, made with `x-budget-hash-password <name> <file>`. Everyone else is
+        added from the page by an admin.
       '';
     };
   };
@@ -72,9 +70,7 @@ in
         X_BUDGET_CONFIG = toString config_file;
         X_BUDGET_HOST = cfg.host;
         X_BUDGET_PORT = toString cfg.port;
-      }
-      // lib.optionalAttrs (cfg.tokenFile != null) {
-        X_BUDGET_TOKEN_FILE = "%d/token";
+        X_BUDGET_PASSWORD_HASH_FILE = "%d/admins";
       };
 
       serviceConfig = {
@@ -82,7 +78,7 @@ in
         DynamicUser = true;
         StateDirectory = "x-budget";
         StateDirectoryMode = "0700";
-        LoadCredential = lib.optional (cfg.tokenFile != null) "token:${cfg.tokenFile}";
+        LoadCredential = [ "admins:${cfg.adminsFile}" ];
         Restart = "on-failure";
         RestartSec = "5s";
 

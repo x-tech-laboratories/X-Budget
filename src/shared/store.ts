@@ -3,7 +3,7 @@
 
 // ── Imports ──────────────────────────────────────────────────────────────────
 
-import { in_transaction, type SqlDatabase } from "@x-tech-laboratories/x-libs/sql";
+import { migrate, type SqlDatabase } from "@x-tech-laboratories/x-libs/sql";
 import { create_sync_engine } from "@x-tech-laboratories/x-libs/sync_engine";
 
 import { budget_feature } from "./budget/store.ts";
@@ -19,22 +19,11 @@ export const setting_defaults = Object.assign({}, ...features.map((feature) => f
 
 // ── Opening ──────────────────────────────────────────────────────────────────
 
-// Each feature keeps its own schema version, so features grow apart without renumbering each other's steps.
-function migrate_feature(database: SqlDatabase, id: string, steps: readonly string[]): void {
-  const row = database.prepare("SELECT version FROM schema_versions WHERE feature = ?").get(id) as { version: number } | undefined;
-  for (let version = row?.version ?? 0; version < steps.length; version++) {
-    in_transaction(database, () => {
-      database.exec(steps[version]!);
-      database.prepare("INSERT INTO schema_versions (feature, version) VALUES (?, ?) ON CONFLICT (feature) DO UPDATE SET version = excluded.version").run(id, version + 1);
-    });
-  }
-}
-
 // Brings an open connection up to date and sets sync to stamp every change; run once each time the database opens.
 export function open_store(database: SqlDatabase): void {
   database.exec("PRAGMA foreign_keys = ON");
-  database.exec("CREATE TABLE IF NOT EXISTS schema_versions (feature TEXT PRIMARY KEY, version INTEGER NOT NULL)");
-  for (const feature of features) migrate_feature(database, feature.id, feature.migrations);
+  // Each feature keeps its own schema version, so features grow apart without renumbering each other's steps.
+  for (const feature of features) migrate(database, feature.migrations, { owner: feature.id });
   sync_engine.install(database);
 }
 
