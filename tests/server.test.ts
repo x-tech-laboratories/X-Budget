@@ -14,6 +14,16 @@ import { open_store } from "../src/shared/store.ts";
 
 let app: FastifyInstance;
 let cookie = "";
+let accounts: AccountStore;
+
+const backup_methods = {
+  list_backups: vi.fn(async () => []),
+  create_backup: vi.fn(),
+  restore_backup: vi.fn(),
+  remove_backup: vi.fn(),
+  get_backup_schedule: vi.fn(() => ({ automatic: true, to_keep: 14 })),
+  set_backup_schedule: vi.fn(),
+};
 
 // A made-up password for the throwaway admin these tests sign in as.
 const test_password = "budget test password";
@@ -25,8 +35,8 @@ afterEach(async () => {
 async function start(web_folder = "/nonexistent"): Promise<FastifyInstance> {
   const database = new DatabaseSync(":memory:");
   open_store(database);
-  const accounts = new AccountStore({ database, app_name: "X-Budget", declared: new Map([["admin", hash_password(test_password)]]) });
-  app = await build_app({ database, accounts, web_folder, back_up: vi.fn() });
+  accounts = new AccountStore({ database: new DatabaseSync(":memory:"), app_name: "X-Budget", declared: new Map([["admin", hash_password(test_password)]]) });
+  app = await build_app({ database: () => database, accounts, web_folder, back_up: vi.fn(), backup_methods });
   const signed_in = await app.inject({ method: "POST", url: "/api/login", payload: { name: "admin", password: test_password } });
   cookie = signed_in.cookies.map((each) => `${each.name}=${each.value}`).join("; ");
   return app;
@@ -68,6 +78,19 @@ describe("server", () => {
     await start();
     expect((await call("get_settings", { not: "a list" })).statusCode).toBe(400);
     expect((await call("drop_everything", [])).statusCode).toBeGreaterThanOrEqual(400);
+  });
+
+  it("lets only an admin reach the server's backups", async () => {
+    await start();
+    const listed = await app.inject({ method: "POST", url: "/api/backups/list_backups", payload: [], headers: { cookie } });
+    expect(listed.statusCode).toBe(200);
+    expect(listed.json()).toEqual([]);
+
+    accounts.create_user({ name: "reader", role: "user", access: null, password: "another made-up password" });
+    const reader = await app.inject({ method: "POST", url: "/api/login", payload: { name: "reader", password: "another made-up password" } });
+    const reader_cookie = reader.cookies.map((each) => `${each.name}=${each.value}`).join("; ");
+    expect((await app.inject({ method: "POST", url: "/api/backups/list_backups", payload: [], headers: { cookie: reader_cookie } })).statusCode).toBe(403);
+    expect((await app.inject({ method: "POST", url: "/api/call/list_budgets", payload: [], headers: { cookie: reader_cookie } })).statusCode).toBe(200);
   });
 
   it("turns away calls from a page that has not signed in", async () => {

@@ -28,7 +28,7 @@ const off = { state: "off", server_url: "", user: "", last_synced_at: "", pendin
 describe("settings", () => {
   it("shows how money is written and saves a new currency", async () => {
     const calls = fake_calls({ locale: "en-US", decimals: 0 });
-    set_page_api({ host: "web", calls, device: null, on_change: () => () => undefined });
+    set_page_api({ host: "web", calls, device: null, backups: null, on_change: () => () => undefined });
     render(<SettingsView />);
 
     expect(await screen.findByText("Amounts look like -$1,235.")).toBeTruthy();
@@ -44,7 +44,7 @@ describe("settings", () => {
       disconnect_sync: vi.fn(),
       sync_now: vi.fn(),
     } as unknown as SyncDeviceClient;
-    set_page_api({ host: "desktop", calls: fake_calls({}), device, on_change: () => () => undefined });
+    set_page_api({ host: "desktop", calls: fake_calls({}), device, backups: null, on_change: () => () => undefined });
     render(<><SettingsView /><Dialogs /></>);
 
     fireEvent.change(await screen.findByLabelText("Server address"), { target: { value: "https://budget.example.org" } });

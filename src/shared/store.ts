@@ -19,6 +19,16 @@ export const setting_defaults = Object.assign({}, ...features.map((feature) => f
 
 // ── Opening ──────────────────────────────────────────────────────────────────
 
+// Whether a database already holding data has steps to run, so it can be backed up before its schema is upgraded.
+export function needs_upgrade(database: SqlDatabase): boolean {
+  const has_versions = database.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'schema_versions'").get();
+  if (!has_versions) return false;
+  return features.some((feature) => {
+    const row = database.prepare("SELECT version FROM schema_versions WHERE owner = ?").get(feature.id) as { version: number } | undefined;
+    return (row?.version ?? 0) < feature.migrations.length;
+  });
+}
+
 // Brings an open connection up to date and sets sync to stamp every change; run once each time the database opens.
 export function open_store(database: SqlDatabase): void {
   database.exec("PRAGMA foreign_keys = ON");

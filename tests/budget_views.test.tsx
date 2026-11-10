@@ -21,7 +21,7 @@ function fake_page(): BudgetMethods {
   open_store(database);
   const methods = bind_methods(() => database, () => undefined);
   const calls = Object.fromEntries(Object.entries(methods).map(([name, call]) => [name, async (...args: unknown[]) => (call as (...args: unknown[]) => unknown)(...args)]));
-  set_page_api({ host: "web", calls: calls as unknown as Client<BudgetMethods>, device: null, on_change: () => () => undefined });
+  set_page_api({ host: "web", calls: calls as unknown as Client<BudgetMethods>, device: null, backups: null, on_change: () => () => undefined });
   methods.set_setting("locale", "en-US");
   return methods;
 }

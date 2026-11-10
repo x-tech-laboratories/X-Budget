@@ -4,9 +4,10 @@
 
 import type { Client } from "@x-tech-laboratories/x-libs/electron/bridge";
 import type { EventsClient } from "@x-tech-laboratories/x-libs/electron/events";
+import type { BackupClient } from "@x-tech-laboratories/x-libs/backups";
 import type { SyncDeviceClient } from "@x-tech-laboratories/x-libs/sync_protocol";
 
-import { device_bridge, budget_bridge, budget_events, type BudgetEvents, type PageApi } from "../../shared/bridge.ts";
+import { backup_bridge, budget_bridge, budget_events, device_bridge, type BudgetEvents, type PageApi } from "../../shared/bridge.ts";
 import type { BudgetMethods } from "../../shared/store.ts";
 
 // ── Api ──────────────────────────────────────────────────────────────────────
@@ -24,6 +25,7 @@ export function desktop_api(): PageApi {
     host: "desktop",
     calls: desktop[budget_bridge.api_name] as Client<BudgetMethods>,
     device: desktop[device_bridge.api_name] as SyncDeviceClient,
+    backups: desktop[backup_bridge.api_name] as BackupClient,
     on_change: (listener) => events.on("changed", listener),
   };
 }

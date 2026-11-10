@@ -36,12 +36,17 @@ interface Account {
   sign_out: () => Promise<void>;
 }
 
+// The highest role, which manages users and the server's backups.
+function is_admin(me: Me): boolean {
+  return me.role === me.roles[me.roles.length - 1];
+}
+
 function AccountPage({ account }: { account: Account }) {
   return (
     <>
       <PageHeading title="Your account" subtitle={account.me.name} />
       <AccountView client={accounts} on_change={() => void account.refresh()} />
-      {account.me.role === account.me.roles[account.me.roles.length - 1] && <UsersView client={accounts} me={account.me} />}
+      {is_admin(account.me) && <UsersView client={accounts} me={account.me} />}
     </>
   );
 }
@@ -58,7 +63,7 @@ function Pages({ account }: { account: Account | null }) {
     document.title = `${label} · X-Budget`;
   }, [label]);
 
-  const view = feature ? feature.view(rest) : is_account ? <AccountPage account={account} /> : <SettingsView />;
+  const view = feature ? feature.view(rest) : is_account ? <AccountPage account={account} /> : <SettingsView is_admin={account === null || is_admin(account.me)} />;
   return (
     <Shell
       brand="X-Budget"
