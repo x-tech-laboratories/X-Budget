@@ -1,0 +1,4 @@
+{
+  "database": "dev-data/budget.db",
+  "backups_folder": "dev-data/backups"
+}

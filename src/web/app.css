@@ -1,0 +1,14 @@
+/* Layout only; every colour, size and widget look comes from Halon's tokens and stylesheet. */
+
+/* A figure never breaks after its minus sign. */
+.amount {
+  white-space: nowrap;
+}
+
+/* A field or figure with a muted note under it, such as a cap's "used". */
+.plan-amount,
+.report-figure {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}

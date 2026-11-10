@@ -1,0 +1,55 @@
+{
+  "name": "x-budget",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Budgets, the money that moved each month and how it measured up, kept on every device and synced through your own server",
+  "license": "GPL-3.0-or-later",
+  "type": "module",
+  "main": "out/main/index.js",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev:server": "X_BUDGET_CONFIG=${X_BUDGET_CONFIG:-config.example.json} node --watch src/server/main.ts",
+    "dev:web": "vite",
+    "dev": "X_BUDGET_USER_DATA=${X_BUDGET_USER_DATA:-dev-data/desktop} electron-vite dev",
+    "build": "tsc -b && vite build",
+    "build:desktop": "tsc -b && electron-vite build",
+    "build:android": "tsc -b && vite build -c vite.android.config.ts && cap sync android",
+    "start": "NODE_ENV=production node src/server/main.ts",
+    "start:desktop": "electron-vite preview",
+    "typecheck": "tsc -b",
+    "test": "vitest run",
+    "lint": "oxlint"
+  },
+  "dependencies": {
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/core": "^8.5.3",
+    "@fastify/cookie": "^11.1.5",
+    "@fastify/formbody": "^9.0.1",
+    "@fastify/static": "^10.1.10",
+    "@sqlite.org/sqlite-wasm": "3.53.4-build2",
+    "@x-tech-laboratories/halon": "^0.12.0",
+    "@x-tech-laboratories/x-libs": "^0.27.0",
+    "fastify": "^5.12.8",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/cli": "^8.5.3",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
+    "@types/node": "^24.19.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.2.1",
+    "electron": "^43.0.0",
+    "electron-vite": "^6.0.0",
+    "jsdom": "^31.0.0",
+    "oxlint": "^1.92.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.6",
+    "vitest": "^5.1.0"
+  }
+}

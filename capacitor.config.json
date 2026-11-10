@@ -1,0 +1,13 @@
+{
+  "appId": "com.xtechlaboratories.xbudget",
+  "appName": "X-Budget",
+  "webDir": "out/android",
+  "android": {
+    "allowMixedContent": true
+  },
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    }
+  }
+}
