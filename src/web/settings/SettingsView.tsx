@@ -1,11 +1,12 @@
-// Settings: how money is written, each section's own settings, and on a device, sync with a server.
+// Settings: how money is written, each section's own settings, sync on a device, and backups of a device or the server.
 
 // ── Imports ──────────────────────────────────────────────────────────────────
 
 import { currency_options, format_money, money_decimals } from "@x-tech-laboratories/x-libs/money";
 import { CommitInput, NumberField, Select } from "@x-tech-laboratories/x-libs/web/react/controls";
-import { PageHeading, SettingRow, SettingsPage, type SettingsSection } from "@x-tech-laboratories/x-libs/web/react/layout";
+import { PageHeading, SettingRow, SettingsPage, type SettingsCategory, type SettingsSection } from "@x-tech-laboratories/x-libs/web/react/layout";
 import { Loaded } from "@x-tech-laboratories/x-libs/web/react/states";
+import { BackupSettings } from "@x-tech-laboratories/x-libs/web/react/backup_settings";
 import { SyncSettings } from "@x-tech-laboratories/x-libs/web/react/sync_settings";
 
 import { calls, data_watch, page, use_settings } from "../api.ts";
@@ -48,10 +49,23 @@ function money_section(settings: Record<string, unknown>, set_setting: (key: str
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
-export function SettingsView() {
+// A device syncs and keeps its own backups; a browser shows the server's backups, which only an admin manages.
+function storage_category(is_admin: boolean): SettingsCategory[] {
+  const { backups, device, host } = page();
+  const sections: SettingsSection[] = [];
+  if (device) {
+    sections.push({ id: "sync", heading: "Sync", hint: "Keep this device's budgets alike with your X-Budget server.", content: <SyncSettings device={device} subscribe={(listener) => data_watch.subscribe(listener)} data_name="budgets" placeholder="https://budget.example.org/" /> });
+  }
+  if (backups && (host !== "web" || is_admin)) {
+    const hint = host === "web" ? "The server's budgets, kept in its data folder." : "This device's budgets, kept beside its database.";
+    sections.push({ id: "backups", heading: "Backups", hint, content: <BackupSettings device={backups} data_name="budgets" on_restored={() => location.reload()} /> });
+  }
+  return sections.length === 0 ? [] : [{ heading: host === "web" ? "Server" : "This device", sections }];
+}
+
+export function SettingsView({ is_admin = true }: { is_admin?: boolean }) {
   const settings = use_settings();
   const set_setting = (key: string, value: unknown) => calls().set_setting(key, value);
-  const device = page().device;
 
   return (
     <>
@@ -64,7 +78,7 @@ export function SettingsView() {
               ...page_features
                 .map((feature) => ({ heading: feature.label, sections: feature.settings({ settings: values, set_setting }) }))
                 .filter((category) => category.sections.length > 0),
-              ...(device ? [{ heading: "This device", sections: [{ id: "sync", heading: "Sync", hint: "Keep this device's budgets alike with your X-Budget server.", content: <SyncSettings device={device} subscribe={(listener) => data_watch.subscribe(listener)} data_name="budgets" placeholder="https://budget.example.org/" /> }] }] : []),
+              ...storage_category(is_admin),
             ]}
           />
         )}

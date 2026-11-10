@@ -3,9 +3,7 @@
 
 // ── Imports ──────────────────────────────────────────────────────────────────
 
-import { mkdirSync } from "node:fs";
 import { join } from "node:path";
-import { DatabaseSync } from "node:sqlite";
 
 import { app, BrowserWindow, ipcMain, nativeTheme, screen, shell } from "electron";
 import { bring_to_front, hold_single_instance } from "@x-tech-laboratories/x-libs/electron/app";
@@ -14,8 +12,9 @@ import { create_window, is_app_page } from "@x-tech-laboratories/x-libs/electron
 import { create_sync_client, sync_device_methods } from "@x-tech-laboratories/x-libs/sync_client";
 import { file_sync_storage } from "@x-tech-laboratories/x-libs/sync_file_storage";
 
-import { device_bridge, budget_bridge, budget_events } from "../shared/bridge.ts";
-import { bind_methods, open_store, sync_engine } from "../shared/store.ts";
+import { open_budget_database } from "../server/database.ts";
+import { backup_bridge, budget_bridge, budget_events, device_bridge } from "../shared/bridge.ts";
+import { bind_methods, sync_engine } from "../shared/store.ts";
 
 // ── Profile ──────────────────────────────────────────────────────────────────
 
@@ -27,16 +26,8 @@ const backups_folder = join(profile, "backups");
 
 // ── Database ─────────────────────────────────────────────────────────────────
 
-mkdirSync(profile, { recursive: true });
-const database = new DatabaseSync(join(profile, "budget.db"));
-database.exec("PRAGMA journal_mode = WAL");
-open_store(database);
-
-function back_up(): void {
-  mkdirSync(backups_folder, { recursive: true });
-  const stamp = new Date().toISOString().replaceAll(":", "-");
-  database.prepare("VACUUM INTO ?").run(join(backups_folder, `budget-${stamp}.db`));
-}
+// Backed up before an upgrade, before the server's copy replaces it, and daily, beside the database.
+const budget = open_budget_database(join(profile, "budget.db"), backups_folder);
 
 function announce_change(): void {
   budget_events.emit(BrowserWindow.getAllWindows(), "changed", null);
@@ -46,8 +37,8 @@ function announce_change(): void {
 
 const sync = create_sync_client({
   engine: sync_engine,
-  database: () => database,
-  storage: file_sync_storage({ file: join(profile, "sync.json"), back_up_before_download: back_up }),
+  database: budget.database,
+  storage: file_sync_storage({ file: join(profile, "sync.json"), back_up_before_download: budget.back_up }),
   data_name: "budget data",
   on_remote_change: announce_change,
   on_status: (status) => budget_events.emit(BrowserWindow.getAllWindows(), "sync_status", status),
@@ -90,7 +81,8 @@ function show_existing_window(): void {
 
 if (hold_single_instance(app, show_existing_window)) {
   void app.whenReady().then(() => {
-    budget_bridge.handle(ipcMain, bind_methods(() => database, announce_change), { trusted, envelopes: true });
+    budget_bridge.handle(ipcMain, bind_methods(budget.database, announce_change), { trusted, envelopes: true });
+    backup_bridge.handle(ipcMain, budget.backup_methods, { trusted, envelopes: true });
     device_bridge.handle(ipcMain, sync_device_methods(sync), { trusted, envelopes: true });
     open_window();
     sync.start();
@@ -98,7 +90,7 @@ if (hold_single_instance(app, show_existing_window)) {
 
   app.on("window-all-closed", () => {
     sync.stop();
-    database.close();
+    budget.close();
     app.quit();
   });
 }

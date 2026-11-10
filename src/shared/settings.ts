@@ -20,6 +20,9 @@ export const common_setting_defaults = {
   decimals: 2,
 } satisfies Settings;
 
+// The settings row holding this device's backup schedule.
+export const backup_schedule_key = "backup_schedule";
+
 // One stored value, or the fallback when it was never set.
 export function read_setting(database: SqlDatabase, key: string, fallback: unknown): unknown {
   const row = database.prepare("SELECT value FROM settings WHERE key = ?").get(key) as { value: string } | undefined;
@@ -31,7 +34,8 @@ export function read_setting(database: SqlDatabase, key: string, fallback: unkno
 export const settings_feature = define_feature({
   id: "settings",
   migrations: [`CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)`],
-  tables: [{ name: "settings", key_columns: ["key"] }],
+  // How this device backs up is its own, never synced.
+  tables: [{ name: "settings", key_columns: ["key"], local_keys: [backup_schedule_key] }],
   methods: {
     // Only the values set; the page lays them over the defaults.
     get_settings: (database: SqlDatabase): Settings => {

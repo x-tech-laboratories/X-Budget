@@ -5,6 +5,7 @@
 
 import { define_bridge, type Client } from "@x-tech-laboratories/x-libs/electron/bridge";
 import { define_events } from "@x-tech-laboratories/x-libs/electron/events";
+import { backup_method_names, type BackupClient, type BackupMethods } from "@x-tech-laboratories/x-libs/backups";
 import { sync_device_method_names, type SyncDeviceClient, type SyncDeviceMethods, type SyncStatus } from "@x-tech-laboratories/x-libs/sync_protocol";
 
 import { method_names, type BudgetMethods } from "./store.ts";
@@ -17,6 +18,9 @@ export const budget_bridge = define_bridge<BudgetMethods>("x_budget", method_nam
 
 // Sync with a server, which only a device with its own database does; a browser is already on the server.
 export const device_bridge = define_bridge<SyncDeviceMethods>("x_budget_device", sync_device_method_names);
+
+// Backups of this device's data, or in a browser, of the server's, which only an admin reaches.
+export const backup_bridge = define_bridge<BackupMethods>("x_budget_backups", backup_method_names);
 
 // What the main process tells the page on its own: the data changed elsewhere, or sync's status moved.
 export type BudgetEvents = { changed: null; sync_status: SyncStatus };
@@ -32,6 +36,8 @@ export interface PageApi {
   calls: Client<BudgetMethods>;
   // Null in a browser, which syncs nothing itself.
   device: SyncDeviceClient | null;
+  // Null where backups cannot be kept yet.
+  backups: BackupClient | null;
   // Runs whenever the data changed somewhere else; returns the function that stops listening.
   on_change: (listener: () => void) => () => void;
 }

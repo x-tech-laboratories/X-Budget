@@ -5,12 +5,13 @@
 
 import { LoginNeeded } from "@x-tech-laboratories/x-libs/web/states";
 
-import { budget_bridge, type PageApi } from "../../shared/bridge.ts";
+import { backup_bridge, budget_bridge, type PageApi } from "../../shared/bridge.ts";
 
 // ── Server calls ─────────────────────────────────────────────────────────────
 
 // Relative, so a server behind a proxy under a folder keeps it.
 const call_path = "api/call/";
+const backups_path = "api/backups/";
 const events_path = "api/events";
 const client_id_header = "x-client-id";
 
@@ -18,8 +19,8 @@ const client_id_header = "x-client-id";
 let client_id = "";
 
 // A signed-out page shows the sign-in form, which listens for LoginNeeded, rather than stale data.
-async function call_server(method: string, args: unknown[]): Promise<unknown> {
-  const response = await fetch(call_path + method, {
+async function post_call(path: string, method: string, args: unknown[]): Promise<unknown> {
+  const response = await fetch(path + method, {
     method: "POST",
     headers: { "content-type": "application/json", [client_id_header]: client_id },
     body: JSON.stringify(args),
@@ -62,8 +63,10 @@ export function web_api(): PageApi {
   });
   return {
     host: "web",
-    calls: budget_bridge.web_rpc(call_server),
+    calls: budget_bridge.web_rpc((method, args) => post_call(call_path, method, args)),
     device: null,
+    // The server's backups, which only an admin reaches.
+    backups: backup_bridge.web_rpc((method, args) => post_call(backups_path, method, args)),
     on_change: (listener) => {
       listeners.add(listener);
       return () => listeners.delete(listener);

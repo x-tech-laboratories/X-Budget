@@ -50,6 +50,8 @@ export async function android_api(): Promise<PageApi> {
     host: "android",
     calls: as_client(methods),
     device: as_client(sync_device_methods(sync)),
+    // A phone keeps backups in a folder it picks, which X-Libs does not offer yet.
+    backups: null,
     on_change: (listener) => {
       listeners.add(listener);
       return () => listeners.delete(listener);
