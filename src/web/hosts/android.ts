@@ -4,6 +4,7 @@
 
 import { App } from "@capacitor/app";
 import type { Client } from "@x-tech-laboratories/x-libs/electron/bridge";
+import { phone_certificates } from "@x-tech-laboratories/x-libs/phone_certificates";
 import { create_sync_client, sync_device_methods } from "@x-tech-laboratories/x-libs/sync_client";
 import { indexed_db_files, open_wasm_database } from "@x-tech-laboratories/x-libs/web/sqlite_wasm";
 import { local_sync_storage } from "@x-tech-laboratories/x-libs/web/sync_storage";
@@ -50,6 +51,7 @@ export async function android_api(): Promise<PageApi> {
     host: "android",
     calls: as_client(methods),
     device: as_client(sync_device_methods(sync)),
+    certificates: phone_certificates(),
     // A phone keeps backups in a folder it picks, which X-Libs does not offer yet.
     backups: null,
     on_change: (listener) => {
