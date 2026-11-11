@@ -81,6 +81,13 @@ makes it the current one again, and bringing back a deleted line brings back the
 sync with the budgets, and each device records only its own changes. Versions older than **Settings → History → Days
 kept** (a year unless set) go, each line and transaction keeping its newest.
 
+## API and MCP
+
+Every call the page makes is open to scripts and AI clients behind the same sign-in, sending a token made on **Your
+account** as a bearer header: `POST /api/call/<method>` with the arguments as a JSON list or by name as an object,
+`GET /api/openapi.json` describing every call, and `/api/mcp` for MCP clients over streamable HTTP. Amounts are in the
+currency set under Settings, days such as `2026-11-10` and months such as `2026-11`.
+
 ## Moving from Trilium
 
 Export a budget note from the Trilium Budget add-on with **Export JSON**, then in X-Budget open **Settings → Plan →

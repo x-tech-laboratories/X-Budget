@@ -26,6 +26,7 @@ import {
   type RollupMode,
   type TrendMonth,
 } from "./model.ts";
+import { budget_api } from "./api.ts";
 import { budget_histories, line_history, list_recent_versions, transaction_history, type BudgetVersion, type LineVersion, type TransactionVersion } from "./history.ts";
 import { read_trilium_budget, write_trilium_budget } from "./trilium.ts";
 
@@ -191,6 +192,7 @@ export const budget_feature = define_feature({
     { name: "budget_transactions", key_columns: ["id"] },
   ],
   histories: budget_histories,
+  api: budget_api,
   methods: {
     list_budgets: (database: SqlDatabase): BudgetSummary[] =>
       plain<BudgetSummary>(
