@@ -4,6 +4,7 @@
 // ── Imports ──────────────────────────────────────────────────────────────────
 
 import type { SqlDatabase } from "@x-tech-laboratories/x-libs/sql";
+import type { ApiSpec } from "@x-tech-laboratories/x-libs/api_spec";
 import type { History } from "@x-tech-laboratories/x-libs/history";
 import type { SyncedTable } from "@x-tech-laboratories/x-libs/sync_engine";
 
@@ -23,6 +24,8 @@ export interface Feature<Methods extends Record<string, StoreMethod>> {
   tables: SyncedTable[];
   // Names that read start with list_, get_, search_, lookup_ or export_, so a write is the only call that announces a change.
   methods: Methods;
+  // What each call does and takes, for programs that reach them through MCP or the API.
+  api: ApiSpec<Methods>;
   // Settings this feature reads, by key such as "budget.currency", with their defaults.
   setting_defaults?: Record<string, unknown>;
   // The versions kept of the feature's items, recorded after every write and synced with them.

@@ -3,6 +3,7 @@
 
 // ── Imports ──────────────────────────────────────────────────────────────────
 
+import type { ApiSpec } from "@x-tech-laboratories/x-libs/api_spec";
 import { migrate, type SqlDatabase } from "@x-tech-laboratories/x-libs/sql";
 import { create_sync_engine } from "@x-tech-laboratories/x-libs/sync_engine";
 
@@ -70,6 +71,9 @@ type Bound<Methods> = {
 export type BudgetMethods = Bound<typeof all_methods>;
 
 export const method_names = Object.keys(all_methods) as (keyof BudgetMethods & string)[];
+
+// Every call described once, for MCP and OpenAPI.
+export const budget_api_spec = Object.assign({}, ...features.map((feature) => feature.api)) as ApiSpec<BudgetMethods>;
 
 export function is_read_only(method: string): boolean {
   return /^(list|get|search|lookup|export)_/.test(method);

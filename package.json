@@ -31,6 +31,7 @@
     "@fastify/formbody": "^9.0.1",
     "@fastify/rate-limit": "^11.2.2",
     "@fastify/static": "^10.1.10",
+    "@modelcontextprotocol/server": "^2.4.0",
     "@sqlite.org/sqlite-wasm": "3.53.4-build2",
     "@x-tech-laboratories/halon": "^0.12.0",
     "@x-tech-laboratories/x-libs": "^0.35.0",

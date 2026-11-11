@@ -48,5 +48,15 @@ export const settings_feature = define_feature({
       database.prepare("INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value").run(key, JSON.stringify(value));
     },
   },
+  api: {
+    get_settings: { description: "Gives the settings that were set, by key, such as currency, decimals and budget.rollup_mode; any key missing has its default.", params: [] },
+    set_setting: {
+      description: "Sets one setting, such as currency to JMD or budget.rollup_mode to cap.",
+      params: [
+        { name: "key", schema: { type: "string", description: "The setting's key." } },
+        { name: "value", schema: { description: "Its new value, as JSON." } },
+      ],
+    },
+  },
   setting_defaults: common_setting_defaults,
 });

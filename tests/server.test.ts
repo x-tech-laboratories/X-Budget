@@ -47,6 +47,18 @@ function call(method: string, payload: unknown) {
   return app.inject({ method: "POST", url: `/api/call/${method}`, payload: payload as object, headers: { cookie } });
 }
 
+// Sends one MCP request as a signed-in client speaking the 2025 protocol would, and gives back its result.
+async function mcp(method: string, params: unknown = {}): Promise<Record<string, unknown>> {
+  const reply = await app.inject({
+    method: "POST",
+    url: "/api/mcp",
+    headers: { cookie, "content-type": "application/json", accept: "application/json, text/event-stream", "mcp-protocol-version": "2025-06-18" },
+    payload: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
+  });
+  const data = /^data: (.+)$/m.exec(reply.body)?.[1] ?? reply.body;
+  return (JSON.parse(data) as { result: Record<string, unknown> }).result;
+}
+
 describe("server", () => {
   it("serves the built page beside the API", async () => {
     const folder = mkdtempSync(join(tmpdir(), "x-budget-web-"));
@@ -109,5 +121,31 @@ describe("server", () => {
     const { generation, changes } = snapshot.json() as { generation: string; changes: { table: string; key: string }[] };
     expect(generation).not.toBe("");
     expect(changes).toContainEqual(expect.objectContaining({ table: "budgets", key: "main" }));
+  });
+
+  it("takes a call's arguments by name as a JSON object too", async () => {
+    await start();
+    expect((await call("set_setting", { value: "JMD", key: "currency" })).statusCode).toBe(204);
+    expect((await call("get_settings", [])).json()).toEqual({ currency: "JMD" });
+    expect((await call("rename_budget", { id: "main" })).statusCode).toBe(400);
+  });
+
+  it("describes every call in an OpenAPI document", async () => {
+    await start();
+    const document = (await app.inject({ method: "GET", url: "/api/openapi.json", headers: { cookie } })).json() as { info: { title: string }; paths: Record<string, unknown> };
+    expect(document.info.title).toBe("X-Budget");
+    expect(Object.keys(document.paths)).toContain("/api/call/get_budget_report");
+    expect(Object.keys(document.paths)).toContain("/api/call/restore_line_version");
+  });
+
+  it("serves every call as an MCP tool, reads marked read-only, and runs one on the budgets", async () => {
+    await start();
+    await mcp("initialize", { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "tests", version: "1" } });
+    const { tools } = (await mcp("tools/list")) as { tools: { name: string; annotations?: { readOnlyHint?: boolean } }[] };
+    expect(tools.find((tool) => tool.name === "list_budgets")?.annotations?.readOnlyHint).toBe(true);
+    expect(tools.find((tool) => tool.name === "add_budget_line")?.annotations?.readOnlyHint).toBe(false);
+
+    await mcp("tools/call", { name: "rename_budget", arguments: { id: "main", name: "Household" } });
+    expect((await call("list_budgets", [])).json()).toEqual([expect.objectContaining({ id: "main", name: "Household" })]);
   });
 });
