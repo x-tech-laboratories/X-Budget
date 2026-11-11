@@ -5,15 +5,17 @@
 
 import { join } from "node:path";
 
-import { app, BrowserWindow, ipcMain, nativeTheme, screen, shell } from "electron";
+import { app, BrowserWindow, ipcMain, nativeTheme, screen, session, shell } from "electron";
 import { bring_to_front, hold_single_instance } from "@x-tech-laboratories/x-libs/electron/app";
 import type { IpcMainEventLike } from "@x-tech-laboratories/x-libs/electron/bridge";
+import { trust_in_session, trusting_fetch } from "@x-tech-laboratories/x-libs/electron/certificates";
 import { create_window, is_app_page } from "@x-tech-laboratories/x-libs/electron/window";
 import { create_sync_client, sync_device_methods } from "@x-tech-laboratories/x-libs/sync_client";
+import { create_certificate_trust } from "@x-tech-laboratories/x-libs/certificates";
 import { file_sync_storage } from "@x-tech-laboratories/x-libs/sync_file_storage";
 
 import { open_budget_database } from "../server/database.ts";
-import { backup_bridge, budget_bridge, budget_events, device_bridge } from "../shared/bridge.ts";
+import { backup_bridge, budget_bridge, certificate_bridge, budget_events, device_bridge } from "../shared/bridge.ts";
 import { bind_methods, sync_engine } from "../shared/store.ts";
 
 // ── Profile ──────────────────────────────────────────────────────────────────
@@ -35,6 +37,9 @@ function announce_change(): void {
 
 // ── Sync ─────────────────────────────────────────────────────────────────────
 
+// Server certificates the user trusted, such as a home server's self-signed one, kept beside the database.
+const certificates = create_certificate_trust({ file: join(profile, "trusted-certificates.json") });
+
 const sync = create_sync_client({
   engine: sync_engine,
   database: budget.database,
@@ -42,6 +47,8 @@ const sync = create_sync_client({
   data_name: "budget data",
   on_remote_change: announce_change,
   on_status: (status) => budget_events.emit(BrowserWindow.getAllWindows(), "sync_status", status),
+  // Chromium's network stack honours the trusted certificates, which Node's own fetch would not.
+  fetch: trusting_fetch(session, certificates),
 });
 
 // ── Window ───────────────────────────────────────────────────────────────────
@@ -84,6 +91,8 @@ if (hold_single_instance(app, show_existing_window)) {
     budget_bridge.handle(ipcMain, bind_methods(budget.database, announce_change), { trusted, envelopes: true });
     backup_bridge.handle(ipcMain, budget.backup_methods, { trusted, envelopes: true });
     device_bridge.handle(ipcMain, sync_device_methods(sync), { trusted, envelopes: true });
+    certificate_bridge.handle(ipcMain, certificates.methods, { trusted, envelopes: true });
+    trust_in_session(session.defaultSession, certificates.is_trusted);
     open_window();
     sync.start();
   });
