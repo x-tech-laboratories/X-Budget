@@ -35,6 +35,12 @@ export const budget_events = define_events<BudgetEvents>("x_budget_events");
 
 export type Host = "web" | "desktop" | "android";
 
+// The folder a phone keeps its backups in; its name is "" until one is picked.
+export interface BackupFolder {
+  name: () => Promise<string>;
+  choose: () => Promise<string>;
+}
+
 export interface PageApi {
   host: Host;
   calls: Client<BudgetMethods>;
@@ -42,6 +48,8 @@ export interface PageApi {
   device: SyncDeviceClient | null;
   // Null where backups cannot be kept yet.
   backups: BackupClient | null;
+  // Set on a phone, whose backups go in a folder the user picks.
+  backup_folder?: BackupFolder;
   // Set where the app makes its own connections and can trust a certificate the system refuses.
   certificates?: CertificateClient;
   // Runs whenever the data changed somewhere else; returns the function that stops listening.

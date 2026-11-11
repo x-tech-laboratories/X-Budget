@@ -2,6 +2,8 @@
 
 // ── Imports ──────────────────────────────────────────────────────────────────
 
+import { useEffect, useState } from "react";
+import type { BackupClient } from "@x-tech-laboratories/x-libs/backups";
 import { currency_options, format_money, money_decimals } from "@x-tech-laboratories/x-libs/money";
 import { CommitInput, NumberField, Select } from "@x-tech-laboratories/x-libs/web/react/controls";
 import { PageHeading, SettingRow, SettingsPage, type SettingsCategory, type SettingsSection } from "@x-tech-laboratories/x-libs/web/react/layout";
@@ -10,7 +12,9 @@ import { BackupSettings } from "@x-tech-laboratories/x-libs/web/react/backup_set
 import { TrustedCertificates } from "@x-tech-laboratories/x-libs/web/react/certificates";
 import { SyncSettings } from "@x-tech-laboratories/x-libs/web/react/sync_settings";
 
+import type { BackupFolder } from "../../shared/bridge.ts";
 import { calls, data_watch, page, use_settings } from "../api.ts";
+import { attempt } from "../budget/common.tsx";
 import { page_features } from "../features.tsx";
 
 // ── Money ────────────────────────────────────────────────────────────────────
@@ -51,8 +55,23 @@ function money_section(settings: Record<string, unknown>, set_setting: (key: str
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 // A device syncs and keeps its own backups; a browser shows the server's backups, which only an admin manages.
+// A phone's backups go in a folder picked once in its storage, where file managers and sync apps reach them.
+function FolderBackups({ backups, folder }: { backups: BackupClient; folder: BackupFolder }) {
+  const [name, set_name] = useState<string | null>(null);
+  useEffect(() => void folder.name().then(set_name), [folder]);
+
+  const folder_row = (
+    <SettingRow label="Backup folder" hint={name ? undefined : "Pick a folder in the phone's storage; backups start once one is picked."}>
+      {name && <span>{name}</span>}
+      <button type="button" onClick={() => attempt(folder.choose().then(set_name))}>{name ? "Change folder…" : "Choose folder…"}</button>
+    </SettingRow>
+  );
+  // Drawn afresh for a new folder, so its backups are listed.
+  return <BackupSettings key={name ?? ""} device={backups} data_name="budgets" on_restored={() => location.reload()} folder_row={folder_row} can_back_up={Boolean(name)} />;
+}
+
 function storage_category(is_admin: boolean): SettingsCategory[] {
-  const { backups, certificates, device, host } = page();
+  const { backups, backup_folder, certificates, device, host } = page();
   const sections: SettingsSection[] = [];
   if (device) {
     sections.push({ id: "sync", heading: "Sync", hint: "Keep this device's budgets alike with your X-Budget server.", content: <>
@@ -62,7 +81,8 @@ function storage_category(is_admin: boolean): SettingsCategory[] {
   }
   if (backups && (host !== "web" || is_admin)) {
     const hint = host === "web" ? "The server's budgets, kept in its data folder." : "This device's budgets, kept beside its database.";
-    sections.push({ id: "backups", heading: "Backups", hint, content: <BackupSettings device={backups} data_name="budgets" on_restored={() => location.reload()} /> });
+    const content = backup_folder ? <FolderBackups backups={backups} folder={backup_folder} /> : <BackupSettings device={backups} data_name="budgets" on_restored={() => location.reload()} />;
+    sections.push({ id: "backups", heading: "Backups", hint: backup_folder ? "This device's budgets, kept in a folder of the phone's storage." : hint, content });
   }
   return sections.length === 0 ? [] : [{ heading: host === "web" ? "Server" : "This device", sections }];
 }

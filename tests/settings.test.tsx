@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { Client } from "@x-tech-laboratories/x-libs/electron/bridge";
 
+import type { BackupClient } from "@x-tech-laboratories/x-libs/backups";
 import type { SyncDeviceClient } from "@x-tech-laboratories/x-libs/sync_protocol";
 import { Dialogs } from "@x-tech-laboratories/x-libs/web/react/dialog";
 import type { BudgetMethods } from "../src/shared/store.ts";
@@ -53,5 +54,28 @@ describe("settings", () => {
     fireEvent.click(screen.getByRole("button", { name: "Use the server's budgets" }));
     fireEvent.click(await screen.findByRole("button", { name: "Use the server's" }));
     await waitFor(() => expect(device.connect_sync).toHaveBeenCalledWith("https://budget.example.org", expect.objectContaining({ name: "admin", password: "made-up password" }), "download"));
+  });
+
+  it("asks a phone for a backup folder before it backs up, and lists backups once one is picked", async () => {
+    const off = { state: "off", server_url: "", user: "", last_synced_at: "", pending_changes: 0, error: "" } as const;
+    const device = { get_sync_status: vi.fn(async () => off), connect_sync: vi.fn(), disconnect_sync: vi.fn(), sync_now: vi.fn() } as unknown as SyncDeviceClient;
+    const backups = {
+      list_backups: vi.fn(async () => []),
+      create_backup: vi.fn(),
+      restore_backup: vi.fn(),
+      remove_backup: vi.fn(),
+      get_backup_schedule: vi.fn(async () => ({ automatic: true, to_keep: 14 })),
+      set_backup_schedule: vi.fn(),
+    } as unknown as BackupClient;
+    let folder = "";
+    const backup_folder = { name: vi.fn(async () => folder), choose: vi.fn(async () => (folder = "Documents")) };
+    set_page_api({ host: "android", calls: fake_calls({}), device, backups, backup_folder, on_change: () => () => undefined });
+    render(<><SettingsView /><Dialogs /></>);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Choose folder…" }));
+    expect(await screen.findByText("Documents")).toBeTruthy();
+    expect(backup_folder.choose).toHaveBeenCalledOnce();
+    expect(screen.getByRole("button", { name: "Change folder…" })).toBeTruthy();
+    await waitFor(() => expect(backups.list_backups).toHaveBeenCalled());
   });
 });

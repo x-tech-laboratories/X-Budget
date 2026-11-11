@@ -4,3 +4,6 @@ project(':capacitor-android').projectDir = new File('../node_modules/@capacitor/
 
 include ':capacitor-app'
 project(':capacitor-app').projectDir = new File('../node_modules/@capacitor/app/android')
+
+include ':x-tech-laboratories-x-libs'
+project(':x-tech-laboratories-x-libs').projectDir = new File('../node_modules/@x-tech-laboratories/x-libs/android')
