@@ -5,6 +5,7 @@
 
 import { define_bridge, type Client } from "@x-tech-laboratories/x-libs/electron/bridge";
 import { define_events } from "@x-tech-laboratories/x-libs/electron/events";
+import { certificate_method_names, type CertificateClient, type CertificateMethods } from "@x-tech-laboratories/x-libs/certificate_protocol";
 import { backup_method_names, type BackupClient, type BackupMethods } from "@x-tech-laboratories/x-libs/backups";
 import { sync_device_method_names, type SyncDeviceClient, type SyncDeviceMethods, type SyncStatus } from "@x-tech-laboratories/x-libs/sync_protocol";
 
@@ -22,6 +23,9 @@ export const device_bridge = define_bridge<SyncDeviceMethods>("x_budget_device",
 // Backups of this device's data, or in a browser, of the server's, which only an admin reaches.
 export const backup_bridge = define_bridge<BackupMethods>("x_budget_backups", backup_method_names);
 
+// Server certificates the user chose to trust, such as a home sync server's self-signed one.
+export const certificate_bridge = define_bridge<CertificateMethods>("x_budget_certificates", certificate_method_names);
+
 // What the main process tells the page on its own: the data changed elsewhere, or sync's status moved.
 export type BudgetEvents = { changed: null; sync_status: SyncStatus };
 
@@ -38,6 +42,8 @@ export interface PageApi {
   device: SyncDeviceClient | null;
   // Null where backups cannot be kept yet.
   backups: BackupClient | null;
+  // Set where the app makes its own connections and can trust a certificate the system refuses.
+  certificates?: CertificateClient;
   // Runs whenever the data changed somewhere else; returns the function that stops listening.
   on_change: (listener: () => void) => () => void;
 }

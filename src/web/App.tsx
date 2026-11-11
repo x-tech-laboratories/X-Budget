@@ -5,12 +5,13 @@
 import { Fragment, useEffect } from "react";
 import { create_accounts_client, type Me } from "@x-tech-laboratories/x-libs/web/accounts";
 import { AccountView, UsersView } from "@x-tech-laboratories/x-libs/web/react/accounts";
+import { SyncCertificatePrompt } from "@x-tech-laboratories/x-libs/web/react/certificates";
 import { PageHeading } from "@x-tech-laboratories/x-libs/web/react/layout";
 import { Shell, use_route, type ShellSection } from "@x-tech-laboratories/x-libs/web/react/shell";
 import { SignInForm, use_account } from "@x-tech-laboratories/x-libs/web/react/sign_in";
 import { theme_choice } from "@x-tech-laboratories/x-libs/web/theme";
 
-import { page } from "./api.ts";
+import { data_watch, page } from "./api.ts";
 import { page_features } from "./features.tsx";
 import { SettingsView } from "./settings/SettingsView.tsx";
 
@@ -91,6 +92,15 @@ function BrowserApp() {
   return <Pages account={{ me: account.me, refresh, sign_out }} />;
 }
 
+// A device that syncs asks to trust its server's certificate whenever sync fails over it.
+function DeviceApp() {
+  const { certificates, device } = page();
+  return <>
+    {device && certificates && <SyncCertificatePrompt device={device} certificates={certificates} subscribe={(listener) => data_watch.subscribe(listener)} />}
+    <Pages account={null} />
+  </>;
+}
+
 export function App() {
-  return page().host === "web" ? <BrowserApp /> : <Pages account={null} />;
+  return page().host === "web" ? <BrowserApp /> : <DeviceApp />;
 }

@@ -4,11 +4,12 @@
 
 import { contextBridge, ipcRenderer } from "electron";
 
-import { backup_bridge, budget_bridge, budget_events, device_bridge } from "../shared/bridge.ts";
+import { backup_bridge, budget_bridge, certificate_bridge, budget_events, device_bridge } from "../shared/bridge.ts";
 
 // ── Bridge ───────────────────────────────────────────────────────────────────
 
 budget_bridge.expose(contextBridge, ipcRenderer, { envelopes: true });
 device_bridge.expose(contextBridge, ipcRenderer, { envelopes: true });
 backup_bridge.expose(contextBridge, ipcRenderer, { envelopes: true });
+certificate_bridge.expose(contextBridge, ipcRenderer, { envelopes: true });
 budget_events.expose(contextBridge, ipcRenderer);
