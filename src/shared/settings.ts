@@ -18,6 +18,8 @@ export const common_setting_defaults = {
   locale: "",
   // Places amounts are kept and shown with; 0 budgets in whole units.
   decimals: 2,
+  // How many days of changes the history keeps, each item keeping its newest version; 0 keeps them all.
+  history_days: 365,
 } satisfies Settings;
 
 // The settings row holding this device's backup schedule.

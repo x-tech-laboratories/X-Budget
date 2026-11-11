@@ -12,6 +12,7 @@ import { ContextMenus } from "@x-tech-laboratories/x-libs/web/react/menus";
 import { bind_methods, open_store, type BudgetMethods } from "../src/shared/store.ts";
 import { data_watch, set_page_api } from "../src/web/api.ts";
 import { PlanView } from "../src/web/budget/PlanView.tsx";
+import { HistoryView } from "../src/web/budget/HistoryView.tsx";
 import { ReportView } from "../src/web/budget/ReportView.tsx";
 import { TransactionsView } from "../src/web/budget/TransactionsView.tsx";
 
@@ -139,5 +140,34 @@ describe("report", () => {
     expect(within(off).getByText("Food")).toBeTruthy();
     expect(within(off).getByText("Unbudgeted spending")).toBeTruthy();
     expect(screen.getByRole("meter", { name: "Spending within its allocation" }).getAttribute("aria-valuetext")).toBe("75%");
+  });
+});
+
+describe("history", () => {
+  it("brings a deleted line back from the History page", async () => {
+    const store = fake_page();
+    const rent = store.add_budget_line("main", null);
+    store.update_budget_line(rent, { title: "Rent", expense: 1200 });
+    store.delete_budget_line(rent);
+    show(<HistoryView />);
+
+    const table = await screen.findByRole("table", { name: "Changes to Budget" });
+    expect(within(table).getAllByText(/Line: Rent · expense \$1,200\.00/).length).toBeGreaterThan(0);
+    fireEvent.click(within(table).getByRole("button", { name: "Bring back" }));
+    await waitFor(() => expect(store.get_budget_plan("main").lines.map((line) => line.title)).toEqual(["Rent"]));
+  });
+
+  it("shows a transaction's versions from its row and restores an older one", async () => {
+    const store = fake_page();
+    const lunch = store.add_budget_transaction("main", "2026-08-02");
+    store.update_budget_transaction(lunch, { description: "Lunch", expense: 12 });
+    store.update_budget_transaction(lunch, { expense: 120 });
+    show(<TransactionsView />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "History of Lunch" }));
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText("Current")).toBeTruthy();
+    fireEvent.click(within(dialog).getAllByRole("button", { name: "Restore" })[0]!);
+    await waitFor(() => expect(store.list_budget_transactions("main", "2026-08")[0]!.expense).toBe(12));
   });
 });

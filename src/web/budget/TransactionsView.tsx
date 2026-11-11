@@ -12,6 +12,7 @@ import { DataTable, type TableColumn } from "@x-tech-laboratories/x-libs/web/rea
 import { line_title, type BudgetLine, type BudgetTransaction } from "../../shared/budget/model.ts";
 import { calls, use_data } from "../api.ts";
 import { Amount, attempt, BudgetPage, use_viewed_month, type BudgetContext, type Money } from "./common.tsx";
+import { open_versions } from "./HistoryView.tsx";
 
 // ── Rows ─────────────────────────────────────────────────────────────────────
 
@@ -93,10 +94,15 @@ const columns: TableColumn<TransactionRow>[] = [
     header: "",
     hideable: false,
     movable: false,
-    cell: ({ transaction }) => (
-      <button type="button" className="icon remove" aria-label={`Delete ${transaction.description || "transaction"}`} onClick={() => attempt(calls().delete_budget_transaction(transaction.id))}>
-        ×
-      </button>
+    cell: ({ transaction, money }) => (
+      <span className="row-actions">
+        <button type="button" className="icon" aria-label={`History of ${transaction.description || "transaction"}`} title="History" onClick={() => open_versions("transaction", transaction.id, transaction.description || "transaction", money)}>
+          ⟲
+        </button>
+        <button type="button" className="icon remove" aria-label={`Delete ${transaction.description || "transaction"}`} onClick={() => attempt(calls().delete_budget_transaction(transaction.id))}>
+          ×
+        </button>
+      </span>
     ),
   },
 ];

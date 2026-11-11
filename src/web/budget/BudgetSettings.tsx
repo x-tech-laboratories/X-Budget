@@ -133,3 +133,18 @@ export function report_settings({ settings, set_setting }: FeatureSettingsProps)
     },
   ];
 }
+
+export function history_settings({ settings, set_setting }: FeatureSettingsProps): SettingsSection[] {
+  const days = Math.max(0, Math.floor(Number(settings.history_days) || 0));
+  return [
+    {
+      id: "history",
+      heading: "History",
+      content: (
+        <SettingRow label="Days kept" hint="Changes older than this go, each line and transaction keeping its newest version. 0 keeps everything.">
+          <NumberField bare label="Days kept" value={days} min={0} max={3650} on_change={(value) => value !== null && value !== days && void set_setting("history_days", Math.round(value))} />
+        </SettingRow>
+      ),
+    },
+  ];
+}

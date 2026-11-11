@@ -12,6 +12,9 @@ whenever it can be reached.
   line; off budget is every amount that broke them, plus anything unbudgeted. It also lists what went off budget, each
   line's plan beside what moved, the month's income, and a trend over the months before.
 
+- **History:** every change to a line or transaction, on every device, any version restorable and a deleted line
+  brought back with the lines deleted along with it.
+
 Keep as many budgets as you like, each with its own plan and transactions. X-Budget is a port of the Trilium Budget
 add-on and reads and writes its JSON, so a budget moves between the two.
 
@@ -69,6 +72,14 @@ budgets, so a restore never changes who can sign in.
 
 The Android app does not back up yet: the folder a phone picks for its backups is still to come to X-Libs. Its budgets
 are safe on the server once it syncs.
+
+## History
+
+Every change to a line or a transaction is kept as a version: open **History…** from a line's menu or the ⟲ on a
+transaction to see its versions, or the **History** page for the latest changes to the whole budget. Restoring a version
+makes it the current one again, and bringing back a deleted line brings back the lines deleted along with it. Versions
+sync with the budgets, and each device records only its own changes. Versions older than **Settings → History → Days
+kept** (a year unless set) go, each line and transaction keeping its newest.
 
 ## Moving from Trilium
 

@@ -4,9 +4,13 @@
 // ── Imports ──────────────────────────────────────────────────────────────────
 
 import type { SqlDatabase } from "@x-tech-laboratories/x-libs/sql";
+import type { History } from "@x-tech-laboratories/x-libs/history";
 import type { SyncedTable } from "@x-tech-laboratories/x-libs/sync_engine";
 
 // ── Features ─────────────────────────────────────────────────────────────────
+
+// The parts of an X-Libs history the store runs, whatever the items are.
+export type KeptHistory = Pick<History<unknown>, "synced_table" | "install" | "forget_touched" | "record" | "prune">;
 
 // A call runs where the database is: on the server, in the desktop app's main process, or in the phone's page.
 export type StoreMethod = (database: SqlDatabase, ...args: never[]) => unknown;
@@ -21,6 +25,8 @@ export interface Feature<Methods extends Record<string, StoreMethod>> {
   methods: Methods;
   // Settings this feature reads, by key such as "budget.currency", with their defaults.
   setting_defaults?: Record<string, unknown>;
+  // The versions kept of the feature's items, recorded after every write and synced with them.
+  histories?: KeptHistory[];
 }
 
 export function define_feature<Methods extends Record<string, StoreMethod>>(feature: Feature<Methods>): Feature<Methods> {
