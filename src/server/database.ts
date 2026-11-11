@@ -7,15 +7,13 @@ import { existsSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 
-import { backup_naming, default_backup_schedule, keep_backing_up, type BackupMethods, type BackupSchedule } from "@x-tech-laboratories/x-libs/backups";
+import { keep_backing_up, type BackupMethods } from "@x-tech-laboratories/x-libs/backups";
 import { sqlite_backups } from "@x-tech-laboratories/x-libs/server/sqlite_backups";
 
-import { backup_schedule_key, read_setting } from "../shared/settings.ts";
+import { backup_methods, budget_backup_naming, read_backup_schedule } from "../shared/backups.ts";
 import { needs_upgrade, open_store, sync_engine } from "../shared/store.ts";
 
 // ── Shapes ───────────────────────────────────────────────────────────────────
-
-export const budget_backup_naming = backup_naming("budget", ".db");
 
 export interface BudgetDatabase {
   // The open connection, which a restore replaces.
@@ -24,18 +22,6 @@ export interface BudgetDatabase {
   back_up: () => Promise<void>;
   backup_methods: BackupMethods;
   close: () => void;
-}
-
-// ── Schedule ─────────────────────────────────────────────────────────────────
-
-function is_schedule(value: unknown): value is BackupSchedule {
-  const schedule = value as BackupSchedule | null;
-  return typeof schedule?.automatic === "boolean" && Number.isInteger(schedule.to_keep) && schedule.to_keep >= 0;
-}
-
-function read_schedule(database: DatabaseSync): BackupSchedule {
-  const stored = read_setting(database, backup_schedule_key, default_backup_schedule);
-  return is_schedule(stored) ? stored : default_backup_schedule;
 }
 
 // ── Database ─────────────────────────────────────────────────────────────────
@@ -68,25 +54,12 @@ export function open_budget_database(path: string, backups_folder: string): Budg
   mkdirSync(backups_folder, { recursive: true });
   start(database);
 
-  const keeper = keep_backing_up(kept, () => read_schedule(database));
-
-  const backup_methods: BackupMethods = {
-    list_backups: kept.list,
-    create_backup: () => kept.create(),
-    restore_backup: kept.restore,
-    remove_backup: kept.remove,
-    get_backup_schedule: () => read_schedule(database),
-    set_backup_schedule: (schedule) => {
-      if (!is_schedule(schedule)) throw new Error("A schedule needs automatic as true or false and a whole number to keep.");
-      database.prepare("INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value").run(backup_schedule_key, JSON.stringify(schedule));
-      void keeper.check();
-    },
-  };
+  const keeper = keep_backing_up(kept, () => read_backup_schedule(database));
 
   return {
     database: () => database,
     back_up: async () => void (await kept.create()),
-    backup_methods,
+    backup_methods: backup_methods(kept, () => database, () => void keeper.check()),
     close: () => {
       keeper.stop();
       database.close();

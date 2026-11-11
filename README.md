@@ -64,14 +64,14 @@ first. After that, changes go both ways within seconds, and a device that is off
 
 ## Backups
 
-The server, and each desktop app, backs up its budgets every day, keeping the last 14, and before anything replaces
-them: a restore, a sync that takes the other copy, and a schema upgrade. **Settings** lists the backups, makes one by
+The server, each desktop app and each phone back up their budgets every day, keeping the last 14, and before anything
+replaces them: a restore, a sync that takes the other copy, and a schema upgrade. **Settings** lists the backups, makes one by
 hand, restores one (backing up the current budgets first), and sets the schedule, which belongs to that device and does
 not sync. In a browser this is the server's, under **Settings → Server**, for admins. Accounts are kept apart from the
 budgets, so a restore never changes who can sign in.
 
-The Android app does not back up yet: the folder a phone picks for its backups is still to come to X-Libs. Its budgets
-are safe on the server once it syncs.
+The Android app keeps its backups in a folder picked once under **Settings → This device → Backups**, in the phone's
+own storage where file managers and sync apps reach them; until a folder is picked it takes none.
 
 ## History
 
