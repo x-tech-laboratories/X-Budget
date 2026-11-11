@@ -7,6 +7,7 @@ import { CommitInput, NumberField, Select } from "@x-tech-laboratories/x-libs/we
 import { PageHeading, SettingRow, SettingsPage, type SettingsCategory, type SettingsSection } from "@x-tech-laboratories/x-libs/web/react/layout";
 import { Loaded } from "@x-tech-laboratories/x-libs/web/react/states";
 import { BackupSettings } from "@x-tech-laboratories/x-libs/web/react/backup_settings";
+import { TrustedCertificates } from "@x-tech-laboratories/x-libs/web/react/certificates";
 import { SyncSettings } from "@x-tech-laboratories/x-libs/web/react/sync_settings";
 
 import { calls, data_watch, page, use_settings } from "../api.ts";
@@ -51,10 +52,13 @@ function money_section(settings: Record<string, unknown>, set_setting: (key: str
 
 // A device syncs and keeps its own backups; a browser shows the server's backups, which only an admin manages.
 function storage_category(is_admin: boolean): SettingsCategory[] {
-  const { backups, device, host } = page();
+  const { backups, certificates, device, host } = page();
   const sections: SettingsSection[] = [];
   if (device) {
-    sections.push({ id: "sync", heading: "Sync", hint: "Keep this device's budgets alike with your X-Budget server.", content: <SyncSettings device={device} subscribe={(listener) => data_watch.subscribe(listener)} data_name="budgets" placeholder="https://budget.example.org/" /> });
+    sections.push({ id: "sync", heading: "Sync", hint: "Keep this device's budgets alike with your X-Budget server.", content: <>
+      <SyncSettings device={device} certificates={certificates} subscribe={(listener) => data_watch.subscribe(listener)} data_name="budgets" placeholder="https://budget.example.org/" />
+      {certificates && <TrustedCertificates certificates={certificates} />}
+    </> });
   }
   if (backups && (host !== "web" || is_admin)) {
     const hint = host === "web" ? "The server's budgets, kept in its data folder." : "This device's budgets, kept beside its database.";
