@@ -20,10 +20,7 @@ import { SettingsView } from "./settings/SettingsView.tsx";
 const theme = theme_choice("x-budget-theme");
 const brand_icon = "icon.svg";
 
-const sections: ShellSection[] = [
-  ...page_features.map((feature) => ({ id: feature.id, label: feature.label, href: `#/${feature.id}` })),
-  { id: "settings", label: "Settings", href: "#/settings" },
-];
+const sections: ShellSection[] = page_features.map((feature) => ({ id: feature.id, label: feature.label, href: `#/${feature.id}` }));
 
 // Relative, so a server behind a proxy under a folder keeps it.
 const accounts = create_accounts_client({ base: "api" });
@@ -76,6 +73,7 @@ function Pages({ account }: { account: Account | null }) {
       user={account ? account.me.name : undefined}
       user_href={account ? "#/account" : undefined}
       on_logout={account ? () => void account.sign_out() : undefined}
+      settings={{ href: "#/settings" }}
     >
       <Fragment key={view_key}>{view}</Fragment>
     </Shell>
