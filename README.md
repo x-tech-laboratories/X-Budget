@@ -1,5 +1,7 @@
 # X-Budget
 
+<a href="https://liberapay.com/BeatLink/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a>
+
 A budget you plan once and measure every month. It runs as a web page served by your own server, as a desktop app and
 as an Android app; the desktop and Android apps keep their own copy of the data, work offline, and sync with the server
 whenever it can be reached.
