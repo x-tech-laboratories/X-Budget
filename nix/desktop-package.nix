@@ -1,6 +1,7 @@
 {
   lib,
   buildNpmPackage,
+  importNpmLock,
   nodejs_24,
   electron_43,
   makeWrapper,
@@ -14,7 +15,9 @@ buildNpmPackage {
   src = lib.cleanSource ../.;
 
   nodejs = nodejs_24;
-  npmDepsHash = import ./npm-deps-hash.nix;
+  # Read from package-lock.json, so there is no deps hash to keep in step with it.
+  npmDeps = importNpmLock { npmRoot = ../.; };
+  npmConfigHook = importNpmLock.npmConfigHook;
   env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 
   nativeBuildInputs = [
