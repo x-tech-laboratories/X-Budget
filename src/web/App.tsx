@@ -7,6 +7,7 @@ import { create_accounts_client, type Me } from "@x-tech-laboratories/x-libs/web
 import { AccountView, UsersView } from "@x-tech-laboratories/x-libs/web/react/accounts";
 import { SyncCertificatePrompt } from "@x-tech-laboratories/x-libs/web/react/certificates";
 import { PageHeading } from "@x-tech-laboratories/x-libs/web/react/layout";
+import { SyncButton } from "@x-tech-laboratories/x-libs/web/react/sync_settings";
 import { Shell, use_route, type ShellSection } from "@x-tech-laboratories/x-libs/web/react/shell";
 import { SignInForm, use_account } from "@x-tech-laboratories/x-libs/web/react/sign_in";
 import { theme_choice } from "@x-tech-laboratories/x-libs/web/theme";
@@ -49,6 +50,12 @@ function AccountPage({ account }: { account: Account }) {
   );
 }
 
+// Sync on a device that syncs, above the Shell's own theme, account and Settings rows.
+function SidebarFoot() {
+  const { device } = page();
+  return device ? <SyncButton device={device} subscribe={(listener) => data_watch.subscribe(listener)} on_open_settings={() => (window.location.hash = "/settings")} /> : null;
+}
+
 function Pages({ account }: { account: Account | null }) {
   const route = use_route();
   const [section = page_features[0]!.id, ...rest] = route.parts;
@@ -73,6 +80,7 @@ function Pages({ account }: { account: Account | null }) {
       user={account ? account.me.name : undefined}
       user_href={account ? "#/account" : undefined}
       on_logout={account ? () => void account.sign_out() : undefined}
+      sidebar_foot={<SidebarFoot />}
       settings={{ href: "#/settings" }}
     >
       <Fragment key={view_key}>{view}</Fragment>
