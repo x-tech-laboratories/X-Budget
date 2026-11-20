@@ -6,3 +6,4 @@ result
 result-*
 *.tsbuildinfo
 dev-data/
+coverage/

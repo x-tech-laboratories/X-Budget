@@ -6,5 +6,18 @@ process.env.TZ = "UTC";
 
 export default defineConfig({
   plugins: [react()],
-  test: { include: ["tests/**/*.test.ts", "tests/**/*.test.tsx"] },
+  test: {
+    include: ["tests/**/*.test.ts", "tests/**/*.test.tsx"],
+    coverage: {
+      provider: "v8",
+      include: ["src/**/*.{ts,tsx}"],
+      thresholds: {
+        autoUpdate: (new_threshold) => Math.floor(new_threshold),
+        lines: 75,
+        statements: 72,
+        functions: 73,
+        branches: 61,
+      },
+    },
+  },
 });
