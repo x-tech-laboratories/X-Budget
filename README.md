@@ -99,6 +99,14 @@ Export a budget note from the Trilium Budget add-on with **Export JSON**, then i
 Budgets → Import JSON…**. The file becomes a new budget named after it; nothing already here is replaced. Files from
 before the add-on's 2.0, with one `amount` per row, read that amount as the expense.
 
+## Releases
+
+CI builds the Android app after the tests pass on every push to `main`, kept as the run's `android` artifact. Pushing a
+version tag such as `v1.2.3` also publishes it as a GitHub release, named for the tag, which
+[Obtainium](https://obtainium.imranr.dev/) can follow for updates. The package is signed with the key in the
+repository's `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD` and `ANDROID_KEY_ALIAS` secrets; without them a
+build stays unsigned and a tag fails rather than publish it.
+
 ## NixOS
 
 ```nix
