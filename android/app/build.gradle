@@ -7,8 +7,9 @@ android {
         applicationId "com.xtechlaboratories.xbudget"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        // CI numbers each build and names it after its version tag, so the phone and Obtainium see it as an update.
+        versionCode((System.getenv("ANDROID_VERSION_CODE") ?: "1") as Integer)
+        versionName System.getenv("ANDROID_VERSION_NAME") ?: "0.0.0-dev"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,8 +17,23 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    // The release key comes from the environment, so a build without it stays unsigned.
+    def keystore_file = System.getenv("ANDROID_KEYSTORE_FILE")
+    signingConfigs {
+        if (keystore_file) {
+            release {
+                storeFile file(keystore_file)
+                storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("ANDROID_KEY_ALIAS")
+                keyPassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
+            }
+        }
+    }
     buildTypes {
         release {
+            if (keystore_file) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
