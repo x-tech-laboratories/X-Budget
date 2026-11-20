@@ -35,6 +35,9 @@ npm run dev               # the desktop app, with its profile in dev-data/deskto
 the desktop app into `out/`, and `npm run build:android` builds the phone's page and copies it into `android/`
 (build the app itself in `nix develop .#android` with `cd android && ./gradlew assembleDebug`).
 
+`npm test` runs the tests and `npm run coverage` runs them with coverage, raising the floor in `vitest.config.ts`; commit
+the raised floor. The floor only rises: CI fails when coverage drops below it or a raised floor is not committed.
+
 ## Configuration
 
 The server reads a JSON file named by `X_BUDGET_CONFIG`; `config.example.json` is the complete default:
