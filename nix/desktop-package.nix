@@ -3,7 +3,7 @@
   buildNpmPackage,
   importNpmLock,
   nodejs_24,
-  electron_43,
+  electron_45,
   makeWrapper,
   copyDesktopItems,
   makeDesktopItem,
@@ -34,7 +34,7 @@ buildNpmPackage {
     mkdir -p $out/lib/x-budget-desktop
     cp -r out resources package.json node_modules $out/lib/x-budget-desktop/
     install -Dm644 resources/icon.svg $out/share/icons/hicolor/scalable/apps/x-budget.svg
-    makeWrapper ${lib.getExe electron_43} $out/bin/x-budget-desktop \
+    makeWrapper ${lib.getExe electron_45} $out/bin/x-budget-desktop \
       --add-flags $out/lib/x-budget-desktop \
       --unset ELECTRON_RUN_AS_NODE
 
