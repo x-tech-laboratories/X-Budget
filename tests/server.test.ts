@@ -112,6 +112,12 @@ describe("server", () => {
     expect((await app.inject({ method: "POST", url: "/api/login", payload: { name: "admin", password: "wrong" } })).statusCode).toBe(401);
   });
 
+  it("turns away a percent-encoded API path from a page that has not signed in", async () => {
+    await start();
+    const refused = await app.inject({ method: "POST", url: "/%61pi/call/list_budgets", payload: [] });
+    expect([400, 401]).toContain(refused.statusCode);
+  });
+
   it("serves sync to a device signed in with a token of its own", async () => {
     await start();
     const signed_in = await app.inject({ method: "POST", url: "/api/login", payload: { name: "admin", password: test_password, device: "Phone" } });
