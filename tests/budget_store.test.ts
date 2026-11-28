@@ -2,12 +2,12 @@ import { DatabaseSync } from "node:sqlite";
 
 import { describe, expect, it } from "vitest";
 
-import { bind_methods, open_store } from "../src/shared/store.ts";
+import { app } from "../src/app.ts";
 
 function open_methods() {
   const database = new DatabaseSync(":memory:");
-  open_store(database);
-  return bind_methods(() => database, () => undefined);
+  app.open_store(database);
+  return app.bind_methods(() => database, () => undefined);
 }
 
 describe("budgets", () => {

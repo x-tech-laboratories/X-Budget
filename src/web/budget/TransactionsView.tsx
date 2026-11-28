@@ -8,10 +8,11 @@ import { CommitInput, NumberField, PeriodStepper, TreeSelect } from "@x-tech-lab
 import { Tile, Tiles, Toolbar } from "@x-tech-laboratories/x-libs/web/react/layout";
 import { Loaded } from "@x-tech-laboratories/x-libs/web/react/states";
 import { DataTable, type TableColumn } from "@x-tech-laboratories/x-libs/web/react/table";
+import { attempt } from "@x-tech-laboratories/x-libs/web/react/toasts";
 
 import { line_title, type BudgetLine, type BudgetTransaction } from "../../shared/budget/model.ts";
 import { calls, use_data } from "../api.ts";
-import { Amount, attempt, BudgetPage, use_viewed_month, type BudgetContext, type Money } from "./common.tsx";
+import { Amount, BudgetPage, use_viewed_month, type BudgetContext, type Money } from "./common.tsx";
 import { open_versions } from "./HistoryView.tsx";
 
 // ── Rows ─────────────────────────────────────────────────────────────────────

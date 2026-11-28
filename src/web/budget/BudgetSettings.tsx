@@ -9,12 +9,12 @@ import { confirm_dialog } from "@x-tech-laboratories/x-libs/web/react/dialog";
 import { SettingRow, type SettingsSection } from "@x-tech-laboratories/x-libs/web/react/layout";
 import { Loaded } from "@x-tech-laboratories/x-libs/web/react/states";
 import { toast } from "@x-tech-laboratories/x-libs/web/react/toasts";
+import { attempt } from "@x-tech-laboratories/x-libs/web/react/toasts";
 
 import { is_rollup_mode, type RollupMode } from "../../shared/budget/model.ts";
 import type { BudgetSummary } from "../../shared/budget/store.ts";
 import { calls, use_data } from "../api.ts";
-import type { FeatureSettingsProps } from "../features.tsx";
-import { attempt } from "./common.tsx";
+import type { PageSettingsProps } from "@x-tech-laboratories/x-libs/app/web/app_page";
 
 // ── Parent totals ────────────────────────────────────────────────────────────
 
@@ -24,7 +24,7 @@ const mode_options: [RollupMode, string][] = [
   ["cap", "Cap: a parent is an allocation its lines draw on"],
 ];
 
-function ParentTotals({ settings, set_setting }: FeatureSettingsProps) {
+function ParentTotals({ settings, set_setting }: PageSettingsProps) {
   const mode = is_rollup_mode(settings["budget.rollup_mode"]) ? settings["budget.rollup_mode"] : "computed";
   return (
     <SettingRow label="Parent lines" hint="Applies to income and expense apart, and to the plan and the report alike. Switching reads the same budget a new way; nothing typed changes.">
@@ -112,14 +112,14 @@ function Budgets() {
 
 // ── Sections ─────────────────────────────────────────────────────────────────
 
-export function plan_settings(props: FeatureSettingsProps): SettingsSection[] {
+export function plan_settings(props: PageSettingsProps): SettingsSection[] {
   return [
     { id: "parent-lines", heading: "Parent lines", hint: "How a line with lines under it adds up.", content: <ParentTotals {...props} /> },
     { id: "budgets", heading: "Budgets", hint: "Each budget keeps its own plan and transactions.", content: <Budgets /> },
   ];
 }
 
-export function report_settings({ settings, set_setting }: FeatureSettingsProps): SettingsSection[] {
+export function report_settings({ settings, set_setting }: PageSettingsProps): SettingsSection[] {
   const months = Number(settings["budget.trend_months"]) || 6;
   return [
     {
@@ -134,7 +134,7 @@ export function report_settings({ settings, set_setting }: FeatureSettingsProps)
   ];
 }
 
-export function history_settings({ settings, set_setting }: FeatureSettingsProps): SettingsSection[] {
+export function history_settings({ settings, set_setting }: PageSettingsProps): SettingsSection[] {
   const days = Math.max(0, Math.floor(Number(settings.history_days) || 0));
   return [
     {

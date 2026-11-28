@@ -11,11 +11,12 @@ import { MenuButton } from "@x-tech-laboratories/x-libs/web/react/menu_button";
 import { Loaded } from "@x-tech-laboratories/x-libs/web/react/states";
 import { DataTable, type TableColumn } from "@x-tech-laboratories/x-libs/web/react/table";
 import { move_for_key, type KeyMove } from "@x-tech-laboratories/x-libs/web/tree";
+import { attempt } from "@x-tech-laboratories/x-libs/web/react/toasts";
 
 import { line_title, line_tree, parent_ids, type BudgetLine, type LineNode, type LineTotals, type RollupMode } from "../../shared/budget/model.ts";
 import type { BudgetPlan } from "../../shared/budget/store.ts";
 import { calls, use_data } from "../api.ts";
-import { Amount, attempt, BudgetPage, type BudgetContext, type Money } from "./common.tsx";
+import { Amount, BudgetPage, type BudgetContext, type Money } from "./common.tsx";
 import { open_versions } from "./HistoryView.tsx";
 
 // ── Rows ─────────────────────────────────────────────────────────────────────

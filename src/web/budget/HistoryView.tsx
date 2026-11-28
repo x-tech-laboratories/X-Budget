@@ -7,11 +7,12 @@ import { Dialog, open_dialog } from "@x-tech-laboratories/x-libs/web/react/dialo
 import { Loaded } from "@x-tech-laboratories/x-libs/web/react/states";
 import { DataTable, type TableColumn } from "@x-tech-laboratories/x-libs/web/react/table";
 import { Age } from "@x-tech-laboratories/x-libs/web/react/time";
+import { attempt } from "@x-tech-laboratories/x-libs/web/react/toasts";
 
 import type { BudgetVersion } from "../../shared/budget/history.ts";
 import { line_title } from "../../shared/budget/model.ts";
 import { calls, use_data } from "../api.ts";
-import { attempt, BudgetPage, type BudgetContext, type Money } from "./common.tsx";
+import { BudgetPage, type BudgetContext, type Money } from "./common.tsx";
 
 // ── Words ────────────────────────────────────────────────────────────────────
 
