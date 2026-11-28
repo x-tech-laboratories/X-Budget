@@ -15,7 +15,7 @@
     "dev": "X_BUDGET_USER_DATA=${X_BUDGET_USER_DATA:-dev-data/desktop} electron-vite dev -c config/electron.vite.config.ts",
     "build": "tsc -b && vite build -c config/vite.config.ts",
     "build:desktop": "tsc -b && electron-vite build -c config/electron.vite.config.ts",
-    "build:android": "tsc -b && vite build -c config/vite.android.config.ts && cap sync android",
+    "build:android": "tsc -b && vite build -c config/vite.android.config.ts && x-app-android",
     "start": "NODE_ENV=production node src/server/main.ts",
     "start:desktop": "electron-vite preview -c config/electron.vite.config.ts",
     "typecheck": "tsc -b",

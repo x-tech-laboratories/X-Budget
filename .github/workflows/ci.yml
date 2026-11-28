@@ -3,6 +3,7 @@ name: CI
 on:
   push:
     branches: [main]
+    tags: ["v*"]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -20,3 +21,18 @@ jobs:
       - uses: x-tech-laboratories/X-App/.github/actions/app-nix@main
         with:
           targets: ./nix#default ./nix#desktop
+
+  # Every push to main builds the Android package once the tests pass, signed when the repository holds the release
+  # key, and a version tag such as v1.2.3 publishes it as a release, which Obtainium follows.
+  android:
+    needs: ci
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: x-tech-laboratories/X-App/.github/actions/app-android@main
+        with:
+          keystore-base64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          keystore-password: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          key-alias: ${{ secrets.ANDROID_KEY_ALIAS }}
