@@ -4,8 +4,8 @@
 
 // ── Imports ──────────────────────────────────────────────────────────────────
 
-import { month_of, shift_month } from "@x-tech-laboratories/x-libs/dates";
-import { by_position, nest, type TreeNode } from "@x-tech-laboratories/x-libs/web/tree";
+import { month_of, shift_month } from "@x-tech-laboratories/x-app/dates";
+import { by_position, nest, type TreeNode } from "@x-tech-laboratories/x-app/web/tree";
 
 // ── Shapes ───────────────────────────────────────────────────────────────────
 

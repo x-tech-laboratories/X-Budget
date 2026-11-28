@@ -2,10 +2,10 @@
 
 // ── Imports ──────────────────────────────────────────────────────────────────
 
-import type { PageSettingsProps } from "@x-tech-laboratories/x-libs/app/web/app_page";
-import { currency_options, format_money, money_decimals } from "@x-tech-laboratories/x-libs/money";
-import { CommitInput, NumberField, Select } from "@x-tech-laboratories/x-libs/web/react/controls";
-import { SettingRow, type SettingsSection } from "@x-tech-laboratories/x-libs/web/react/layout";
+import type { PageSettingsProps } from "@x-tech-laboratories/x-app/app/web/app_page";
+import { currency_options, format_money, money_decimals } from "@x-tech-laboratories/x-app/money";
+import { CommitInput, NumberField, Select } from "@x-tech-laboratories/x-app/web/react/controls";
+import { SettingRow, type SettingsSection } from "@x-tech-laboratories/x-app/web/react/layout";
 
 // ── Money ────────────────────────────────────────────────────────────────────
 

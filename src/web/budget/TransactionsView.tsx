@@ -3,12 +3,12 @@
 
 // ── Imports ──────────────────────────────────────────────────────────────────
 
-import { is_day, this_month, today } from "@x-tech-laboratories/x-libs/dates";
-import { CommitInput, NumberField, PeriodStepper, TreeSelect } from "@x-tech-laboratories/x-libs/web/react/controls";
-import { Tile, Tiles, Toolbar } from "@x-tech-laboratories/x-libs/web/react/layout";
-import { Loaded } from "@x-tech-laboratories/x-libs/web/react/states";
-import { DataTable, type TableColumn } from "@x-tech-laboratories/x-libs/web/react/table";
-import { attempt } from "@x-tech-laboratories/x-libs/web/react/toasts";
+import { is_day, this_month, today } from "@x-tech-laboratories/x-app/dates";
+import { CommitInput, NumberField, PeriodStepper, TreeSelect } from "@x-tech-laboratories/x-app/web/react/controls";
+import { Tile, Tiles, Toolbar } from "@x-tech-laboratories/x-app/web/react/layout";
+import { Loaded } from "@x-tech-laboratories/x-app/web/react/states";
+import { DataTable, type TableColumn } from "@x-tech-laboratories/x-app/web/react/table";
+import { attempt } from "@x-tech-laboratories/x-app/web/react/toasts";
 
 import { line_title, type BudgetLine, type BudgetTransaction } from "../../shared/budget/model.ts";
 import { calls, use_data } from "../api.ts";

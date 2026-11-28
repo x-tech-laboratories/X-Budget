@@ -1,6 +1,6 @@
 // The page's calls typed with X-Budget's own, on whichever host the base app started the page.
 
-import { page_hooks } from "@x-tech-laboratories/x-libs/app/web/page";
+import { page_hooks } from "@x-tech-laboratories/x-app/app/web/page";
 
 import type { BudgetMethods } from "../app.ts";
 

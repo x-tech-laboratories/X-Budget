@@ -2,8 +2,8 @@
 
 // ── Imports ──────────────────────────────────────────────────────────────────
 
-import { define_app, type AppMethodsOf } from "@x-tech-laboratories/x-libs/app/define";
-import { settings_of } from "@x-tech-laboratories/x-libs/settings";
+import { define_app, type AppMethodsOf } from "@x-tech-laboratories/x-app/app/define";
+import { settings_of } from "@x-tech-laboratories/x-app/settings";
 
 import package_json from "../package.json" with { type: "json" };
 import { budget_feature } from "./shared/budget/store.ts";

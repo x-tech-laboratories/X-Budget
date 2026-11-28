@@ -3,8 +3,8 @@
 
 // ── Imports ──────────────────────────────────────────────────────────────────
 
-import { create_history, type Version } from "@x-tech-laboratories/x-libs/history";
-import type { SqlDatabase } from "@x-tech-laboratories/x-libs/sql";
+import { create_history, type Version } from "@x-tech-laboratories/x-app/history";
+import type { SqlDatabase } from "@x-tech-laboratories/x-app/sql";
 
 import type { BudgetLine, BudgetTransaction } from "./model.ts";
 

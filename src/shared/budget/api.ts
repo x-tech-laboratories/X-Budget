@@ -2,7 +2,7 @@
 
 // ── Imports ──────────────────────────────────────────────────────────────────
 
-import type { JsonSchema, MethodSpec } from "@x-tech-laboratories/x-libs/api_spec";
+import type { JsonSchema, MethodSpec } from "@x-tech-laboratories/x-app/api_spec";
 
 import { amount, budget_id, day, id_of, json_file, month, text } from "../api_schemas.ts";
 

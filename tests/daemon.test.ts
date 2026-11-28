@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { call_daemon, is_answering } from "@x-tech-laboratories/x-libs/local_daemon";
+import { call_daemon, is_answering } from "@x-tech-laboratories/x-app/local_daemon";
 
 let folder: string;
 let socket_path: string;

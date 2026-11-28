@@ -2,7 +2,7 @@
 
 // ── Imports ──────────────────────────────────────────────────────────────────
 
-import type { JsonSchema } from "@x-tech-laboratories/x-libs/api_spec";
+import type { JsonSchema } from "@x-tech-laboratories/x-app/api_spec";
 
 // ── Shapes ───────────────────────────────────────────────────────────────────
 

@@ -1,14 +1,14 @@
 // @vitest-environment jsdom
-import "@x-tech-laboratories/x-libs/web/react/test_stubs";
+import "@x-tech-laboratories/x-app/web/react/test_stubs";
 import { DatabaseSync } from "node:sqlite";
 
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { Client } from "@x-tech-laboratories/x-libs/electron/bridge";
-import { Dialogs } from "@x-tech-laboratories/x-libs/web/react/dialog";
-import { ContextMenus } from "@x-tech-laboratories/x-libs/web/react/menus";
-import { data_watch, set_page_api } from "@x-tech-laboratories/x-libs/app/web/page";
+import type { Client } from "@x-tech-laboratories/x-app/electron/bridge";
+import { Dialogs } from "@x-tech-laboratories/x-app/web/react/dialog";
+import { ContextMenus } from "@x-tech-laboratories/x-app/web/react/menus";
+import { data_watch, set_page_api } from "@x-tech-laboratories/x-app/app/web/page";
 
 import { app, type BudgetMethods } from "../src/app.ts";
 import { PlanView } from "../src/web/budget/PlanView.tsx";

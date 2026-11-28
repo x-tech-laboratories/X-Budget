@@ -11,19 +11,19 @@
   },
   "scripts": {
     "dev:server": "X_BUDGET_CONFIG=${X_BUDGET_CONFIG:-config.example.json} X_BUDGET_PASSWORD_HASH_FILE=${X_BUDGET_PASSWORD_HASH_FILE:-dev-data/password.hash} node --watch src/server/main.ts",
-    "dev:web": "vite",
-    "dev": "X_BUDGET_USER_DATA=${X_BUDGET_USER_DATA:-dev-data/desktop} electron-vite dev",
-    "build": "tsc -b && vite build",
-    "build:desktop": "tsc -b && electron-vite build",
-    "build:android": "tsc -b && vite build -c vite.android.config.ts && cap sync android",
+    "dev:web": "vite -c config/vite.config.ts",
+    "dev": "X_BUDGET_USER_DATA=${X_BUDGET_USER_DATA:-dev-data/desktop} electron-vite dev -c config/electron.vite.config.ts",
+    "build": "tsc -b && vite build -c config/vite.config.ts",
+    "build:desktop": "tsc -b && electron-vite build -c config/electron.vite.config.ts",
+    "build:android": "tsc -b && vite build -c config/vite.android.config.ts && cap sync android",
     "start": "NODE_ENV=production node src/server/main.ts",
-    "start:desktop": "electron-vite preview",
+    "start:desktop": "electron-vite preview -c config/electron.vite.config.ts",
     "typecheck": "tsc -b",
-    "test": "vitest run",
-    "coverage": "vitest run --coverage",
+    "test": "vitest run --config config/vitest.config.ts",
+    "coverage": "vitest run --coverage --config config/vitest.config.ts",
     "lint": "oxlint",
     "hash-password": "node src/server/hash_password.ts",
-    "icons": "x-libs-icons"
+    "icons": "x-app-icons"
   },
   "dependencies": {
     "@capacitor/app": "^8.1.2",
@@ -36,7 +36,7 @@
     "@modelcontextprotocol/server": "^2.4.0",
     "@sqlite.org/sqlite-wasm": "3.53.4-build2",
     "@x-tech-laboratories/halon": "^0.34.0",
-    "@x-tech-laboratories/x-libs": "^0.97.0",
+    "@x-tech-laboratories/x-app": "^0.99.0",
     "fastify": "^5.12.8",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"

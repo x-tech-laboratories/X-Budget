@@ -37,7 +37,8 @@
     "root": {
       "inputs": {
         "flake-utils": "flake-utils",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "x-app": "x-app"
       }
     },
     "systems": {
@@ -52,6 +53,21 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "x-app": {
+      "locked": {
+        "lastModified": 1795856517,
+        "narHash": "sha256-vDPLnyg9xsXTb/sZYHpj38riTSm3wpis08yhxgUjBIA=",
+        "owner": "x-tech-laboratories",
+        "repo": "X-App",
+        "rev": "c3a81a84eb5efe8040a21db05403219583e91118",
+        "type": "github"
+      },
+      "original": {
+        "owner": "x-tech-laboratories",
+        "repo": "X-App",
         "type": "github"
       }
     }

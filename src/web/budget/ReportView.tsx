@@ -3,12 +3,12 @@
 
 // ── Imports ──────────────────────────────────────────────────────────────────
 
-import { format_month } from "@x-tech-laboratories/x-libs/dates";
-import { Meters, StackedBarChart } from "@x-tech-laboratories/x-libs/web/react/charts";
-import { PeriodStepper } from "@x-tech-laboratories/x-libs/web/react/controls";
-import { Section, Tile, Tiles, Toolbar } from "@x-tech-laboratories/x-libs/web/react/layout";
-import { Loaded } from "@x-tech-laboratories/x-libs/web/react/states";
-import { DataTable, type TableColumn } from "@x-tech-laboratories/x-libs/web/react/table";
+import { format_month } from "@x-tech-laboratories/x-app/dates";
+import { Meters, StackedBarChart } from "@x-tech-laboratories/x-app/web/react/charts";
+import { PeriodStepper } from "@x-tech-laboratories/x-app/web/react/controls";
+import { Section, Tile, Tiles, Toolbar } from "@x-tech-laboratories/x-app/web/react/layout";
+import { Loaded } from "@x-tech-laboratories/x-app/web/react/states";
+import { DataTable, type TableColumn } from "@x-tech-laboratories/x-app/web/react/table";
 
 import type { OffBudgetItem, TrendMonth, Variance } from "../../shared/budget/model.ts";
 import type { BudgetReport } from "../../shared/budget/store.ts";

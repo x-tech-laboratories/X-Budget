@@ -5,7 +5,7 @@ updates:
     schedule:
       interval: weekly
     groups:
-      # X-Libs and Halon in one pull request, so the Halon peer of X-Libs matches.
+      # X-App and Halon in one pull request, so the Halon peer of X-App matches.
       x-tech:
         patterns: ["@x-tech-laboratories/*"]
       # Third-party patch and minor updates in one pull request; a major update comes on its own.
@@ -17,7 +17,7 @@ updates:
       # The types follow the Node runtime, 24 in CI and the flakes, so their majors move with it by hand.
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
-    # Our own releases skip the default 3-day cooldown, which X-Libs outpaces several times a day.
-    # Revisit once X-Libs stabilizes and releases slow down.
+    # Our own releases skip the default 3-day cooldown, which X-App outpaces several times a day.
+    # Revisit once X-App stabilizes and releases slow down.
     cooldown:
       exclude: ["@x-tech-laboratories/*"]

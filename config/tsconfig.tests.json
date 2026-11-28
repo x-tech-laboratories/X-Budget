@@ -1,0 +1,5 @@
+{
+  "extends": ["./tsconfig.base.json", "@x-tech-laboratories/x-app/config/tsconfig/tests.json"],
+  "include": ["../tests", "../src"],
+  "compilerOptions": { "tsBuildInfoFile": "../node_modules/.tmp/tsconfig.tests.tsbuildinfo" }
+}

@@ -2,7 +2,7 @@
 
 // ── Imports ──────────────────────────────────────────────────────────────────
 
-import type { AppPage } from "@x-tech-laboratories/x-libs/app/web/app_page";
+import type { AppPage } from "@x-tech-laboratories/x-app/app/web/app_page";
 
 import { history_settings, plan_settings, report_settings } from "./budget/BudgetSettings.tsx";
 import { HistoryView } from "./budget/HistoryView.tsx";

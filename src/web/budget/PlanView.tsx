@@ -4,14 +4,14 @@
 // ── Imports ──────────────────────────────────────────────────────────────────
 
 import { useState, type KeyboardEvent } from "react";
-import { CommitInput, NumberField } from "@x-tech-laboratories/x-libs/web/react/controls";
-import { confirm_dialog } from "@x-tech-laboratories/x-libs/web/react/dialog";
-import { Tile, Tiles, Toolbar } from "@x-tech-laboratories/x-libs/web/react/layout";
-import { MenuButton } from "@x-tech-laboratories/x-libs/web/react/menu_button";
-import { Loaded } from "@x-tech-laboratories/x-libs/web/react/states";
-import { DataTable, type TableColumn } from "@x-tech-laboratories/x-libs/web/react/table";
-import { move_for_key, type KeyMove } from "@x-tech-laboratories/x-libs/web/tree";
-import { attempt } from "@x-tech-laboratories/x-libs/web/react/toasts";
+import { CommitInput, NumberField } from "@x-tech-laboratories/x-app/web/react/controls";
+import { confirm_dialog } from "@x-tech-laboratories/x-app/web/react/dialog";
+import { Tile, Tiles, Toolbar } from "@x-tech-laboratories/x-app/web/react/layout";
+import { MenuButton } from "@x-tech-laboratories/x-app/web/react/menu_button";
+import { Loaded } from "@x-tech-laboratories/x-app/web/react/states";
+import { DataTable, type TableColumn } from "@x-tech-laboratories/x-app/web/react/table";
+import { move_for_key, type KeyMove } from "@x-tech-laboratories/x-app/web/tree";
+import { attempt } from "@x-tech-laboratories/x-app/web/react/toasts";
 
 import { line_title, line_tree, parent_ids, type BudgetLine, type LineNode, type LineTotals, type RollupMode } from "../../shared/budget/model.ts";
 import type { BudgetPlan } from "../../shared/budget/store.ts";

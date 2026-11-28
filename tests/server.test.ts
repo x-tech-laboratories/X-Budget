@@ -6,12 +6,12 @@ import { DatabaseSync } from "node:sqlite";
 import type { FastifyInstance } from "fastify";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { build_server } from "@x-tech-laboratories/x-libs/app/server";
-import { AccountStore } from "@x-tech-laboratories/x-libs/server/account_store";
-import { EventStream } from "@x-tech-laboratories/x-libs/server/events";
-import { hash_password } from "@x-tech-laboratories/x-libs/server/passwords";
-import { create_sync_peer } from "@x-tech-laboratories/x-libs/sync_peer";
-import { file_sync_storage } from "@x-tech-laboratories/x-libs/sync_file_storage";
+import { build_server } from "@x-tech-laboratories/x-app/app/server";
+import { AccountStore } from "@x-tech-laboratories/x-app/server/account_store";
+import { EventStream } from "@x-tech-laboratories/x-app/server/events";
+import { hash_password } from "@x-tech-laboratories/x-app/server/passwords";
+import { create_sync_peer } from "@x-tech-laboratories/x-app/sync_peer";
+import { file_sync_storage } from "@x-tech-laboratories/x-app/sync_file_storage";
 
 import { app } from "../src/app.ts";
 
