@@ -32,8 +32,9 @@ npm run dev               # the desktop app, with its profile in dev-data/deskto
 ```
 
 `npm run build` type-checks and builds the page into `out/web`; `npm start` serves it. `npm run build:desktop` builds
-the desktop app into `out/`, and `npm run build:android` builds the phone's page and copies it into `android/`
-(build the app itself in `nix develop ./nix#android` with `cd android && ./gradlew assembleDebug`).
+the desktop app into `out/`, and `npm run build:android` builds the phone's page and has X-App's `x-app-android` make
+or update the Capacitor project in `android/` and copy the page in (build the app itself in `nix develop ./nix#android`
+with `cd android && ./gradlew assembleDebug`).
 
 `npm test` runs the tests and `npm run coverage` runs them with coverage, raising the floor in `config/vitest.config.ts`; commit
 the raised floor. The floor only rises: CI fails when coverage drops below it or a raised floor is not committed.
@@ -111,6 +112,14 @@ Export a budget note from the Trilium Budget add-on with **Export JSON**, then i
 Budgets → Import JSON…**. The file becomes a new budget named after it; nothing already here is replaced. Files from
 before the add-on's 2.0, with one `amount` per row, read that amount as the expense.
 
+## Releases
+
+CI builds the Android app after the tests pass on every push to `main`, kept as the run's `android` artifact. Pushing a
+version tag such as `v1.2.3` also publishes it as a GitHub release, named for the tag, which
+[Obtainium](https://obtainium.imranr.dev/) can follow for updates. The package is signed with the key in the
+repository's `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD` and `ANDROID_KEY_ALIAS` secrets; without them a
+build stays unsigned and a tag fails rather than publish it.
+
 ## NixOS
 
 ```nix
@@ -139,7 +148,7 @@ src/
   shared/    budget/ with its rules, store, history, API and the Trilium file format, and api_schemas.ts
 tests/       one *.test.ts per behaviour
 docs/        architecture.md
-android/     the Capacitor project
+android/     the Capacitor project, made by x-app-android and not kept in git
 config/      the Vite, electron-vite and Vitest configs and each target's tsconfig, all from X-App's presets
 nix/         app.nix, and flake.nix building it with X-App's Nix lib, with its flake.lock and shell.nix
 ```
