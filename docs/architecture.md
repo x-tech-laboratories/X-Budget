@@ -82,7 +82,7 @@ The server and every device run the same store, and each is a peer of the others
 wins. Two copies pair once through a code shown by the one the other can reach, then merge with nothing asked. Each
 sends its changes within seconds, takes the other's in the same round trip, and keeps working offline. The server
 answers peers at `api/sync/peer` with no sign-in, since every call is sealed between the two devices, and serves its own
-pairings at `api/device/` to admins. Every device starts with the budget `main`, so two devices set up apart share it
+pairings at `api/sync/` to admins. Every device starts with the budget `main`, so two devices set up apart share it
 rather than holding one copy each.
 
 ## Signing in
