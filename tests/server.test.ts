@@ -84,7 +84,7 @@ describe("server", () => {
     const write = await call("set_setting", ["currency", "JMD"]);
     expect(write.statusCode).toBe(204);
     const read = await call("get_settings", []);
-    expect(read.json()).toEqual({ currency: "JMD" });
+    expect(read.json()).toMatchObject({ currency: "JMD", decimals: 2 });
   });
 
   it("sends a call's answer as JSON even when it is a bare string such as a new id", async () => {
@@ -143,8 +143,11 @@ describe("server", () => {
   it("takes a call's arguments by name as a JSON object too", async () => {
     await start();
     expect((await call("set_setting", { value: "JMD", key: "currency" })).statusCode).toBe(204);
-    expect((await call("get_settings", [])).json()).toEqual({ currency: "JMD" });
+    expect((await call("get_settings", [])).json()).toMatchObject({ currency: "JMD", decimals: 2 });
     expect((await call("rename_budget", { id: "main" })).statusCode).toBe(400);
+    const not_a_list = await app.inject({ method: "POST", url: "/api/call/list_budgets", payload: "5", headers: { cookie, "content-type": "application/json" } });
+    expect(not_a_list.statusCode).toBe(400);
+    expect((await call("no_such_call", [])).statusCode).toBeGreaterThanOrEqual(400);
   });
 
   it("describes every call in an OpenAPI document", async () => {
