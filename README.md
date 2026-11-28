@@ -130,12 +130,13 @@ desktop app.
 
 ```
 src/
-  server/    Fastify app and main.ts
-  daemon/    the desktop app's daemon: its database, sync and backups, served on a Unix socket
-  main/      Electron main process: the window, the login entry, and the page's calls passed to the chosen daemon
-  preload/   the desktop page's bridge
-  web/       the React page: budget/ for Plan, Transactions, Report and their settings, and hosts/ for web, desktop and Android
-  shared/    the store every host runs, budget/ with its rules and the Trilium file format, and the bridge's method tables
+  app.ts     define_app: X-Budget as the X-Libs base app runs it
+  server/    main.ts, which runs the base's server, and hash_password.ts
+  daemon/    main.ts, which runs the base's daemon
+  main/      index.ts, which runs the base's desktop window
+  preload/   index.ts, which runs the base's preload
+  web/       the React page: main.tsx, pages.tsx, budget/ for Plan, Transactions, Report and History, settings/money.tsx
+  shared/    budget/ with its rules, store, history, API and the Trilium file format, and api_schemas.ts
 tests/       one *.test.ts per behaviour
 docs/        architecture.md
 android/     the Capacitor project

@@ -2,12 +2,12 @@ import { DatabaseSync } from "node:sqlite";
 
 import { describe, expect, it } from "vitest";
 
-import { bind_methods, open_store, sync_engine } from "../src/shared/store.ts";
+import { app } from "../src/app.ts";
 
 function open_methods() {
   const database = new DatabaseSync(":memory:");
-  open_store(database);
-  return { database, methods: bind_methods(() => database, () => undefined) };
+  app.open_store(database);
+  return { database, methods: app.bind_methods(() => database, () => undefined) };
 }
 
 describe("history", () => {
@@ -68,13 +68,13 @@ describe("history", () => {
   it("syncs the versions, and leaves changes from elsewhere to the device that made them", () => {
     const { database, methods } = open_methods();
     const line = methods.add_budget_line("main", null);
-    const changes = sync_engine.collect_changes_since(database, 0, "").changes;
+    const changes = app.sync_engine.collect_changes_since(database, 0, "").changes;
     expect(changes.some((change) => change.table === "budget_line_versions")).toBe(true);
 
     const { database: other } = open_methods();
-    sync_engine.apply_changes(other, changes.filter((change) => change.table === "budget_lines"));
+    app.sync_engine.apply_changes(other, changes.filter((change) => change.table === "budget_lines"));
     expect(other.prepare("SELECT COUNT(*) AS count FROM budget_line_versions_pending").get()).toEqual({ count: 0 });
-    expect(bind_methods(() => other, () => undefined).list_line_versions(line)).toEqual([]);
+    expect(app.bind_methods(() => other, () => undefined).list_line_versions(line)).toEqual([]);
   });
 
   it("prunes versions older than the days set, keeping each line's newest", () => {
@@ -84,7 +84,7 @@ describe("history", () => {
     database.prepare("UPDATE budget_line_versions SET changed_at = '2020-01-01T00:00:00.000Z'").run();
     methods.set_setting("history_days", 30);
 
-    open_store(database);
+    app.open_store(database);
     expect(methods.list_line_versions(rent)).toHaveLength(1);
   });
 });

@@ -3,13 +3,13 @@
 
 // ── Imports ──────────────────────────────────────────────────────────────────
 
+import { define_feature } from "@x-tech-laboratories/x-libs/app/define";
 import { is_day, is_month, shift_month } from "@x-tech-laboratories/x-libs/dates";
 import { round_money } from "@x-tech-laboratories/x-libs/money";
 import { read_setting, settings_of } from "@x-tech-laboratories/x-libs/settings";
 import { in_transaction, type SqlDatabase, type SqlValue } from "@x-tech-laboratories/x-libs/sql";
 import { subtree_ids } from "@x-tech-laboratories/x-libs/web/tree";
 
-import { define_feature, new_id } from "../feature.ts";
 import {
   compute_totals,
   grand_totals,
@@ -153,6 +153,11 @@ function add_budget(database: SqlDatabase, name: string): string {
 }
 
 // ── Store ────────────────────────────────────────────────────────────────────
+
+// A new id that every device can make on its own without clashing.
+function new_id(): string {
+  return crypto.randomUUID();
+}
 
 export const budget_feature = define_feature({
   id: "budget",

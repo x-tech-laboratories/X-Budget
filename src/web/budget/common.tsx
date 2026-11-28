@@ -11,8 +11,6 @@ import { PageHeading } from "@x-tech-laboratories/x-libs/web/react/layout";
 import { use_pref } from "@x-tech-laboratories/x-libs/web/react/prefs";
 import { Empty, Loaded } from "@x-tech-laboratories/x-libs/web/react/states";
 import { create_store, use_store } from "@x-tech-laboratories/x-libs/web/react/store";
-import { toast } from "@x-tech-laboratories/x-libs/web/react/toasts";
-import { describe_error } from "@x-tech-laboratories/x-libs/web/errors";
 
 import type { BudgetSummary } from "../../shared/budget/store.ts";
 import { use_data, use_settings } from "../api.ts";
@@ -38,11 +36,6 @@ export function money_of(settings: Record<string, unknown>): Money {
 // A figure below zero reads in the danger colour.
 export function Amount({ value, money }: { value: number; money: Money }) {
   return <span className={value < 0 ? "amount tone-bad" : "amount"}>{money.format(value)}</span>;
-}
-
-// A call made from a button or field, its failure shown as a toast rather than lost.
-export function attempt(work: Promise<unknown>): void {
-  work.catch((error: unknown) => toast(describe_error(error), { tone: "bad" }));
 }
 
 // ── Month ────────────────────────────────────────────────────────────────────

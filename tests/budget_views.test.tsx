@@ -8,9 +8,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Client } from "@x-tech-laboratories/x-libs/electron/bridge";
 import { Dialogs } from "@x-tech-laboratories/x-libs/web/react/dialog";
 import { ContextMenus } from "@x-tech-laboratories/x-libs/web/react/menus";
+import { data_watch, set_page_api } from "@x-tech-laboratories/x-libs/app/web/page";
 
-import { bind_methods, open_store, type BudgetMethods } from "../src/shared/store.ts";
-import { data_watch, set_page_api } from "../src/web/api.ts";
+import { app, type BudgetMethods } from "../src/app.ts";
 import { PlanView } from "../src/web/budget/PlanView.tsx";
 import { HistoryView } from "../src/web/budget/HistoryView.tsx";
 import { ReportView } from "../src/web/budget/ReportView.tsx";
@@ -19,8 +19,8 @@ import { TransactionsView } from "../src/web/budget/TransactionsView.tsx";
 // The page's calls answered by a real store on a throwaway database, as a host would, each write telling the views.
 function fake_page(): BudgetMethods {
   const database = new DatabaseSync(":memory:");
-  open_store(database);
-  const methods = bind_methods(() => database, () => undefined);
+  app.open_store(database);
+  const methods = app.bind_methods(() => database, () => undefined);
   const calls = Object.fromEntries(Object.entries(methods).map(([name, call]) => [name, async (...args: unknown[]) => (call as (...args: unknown[]) => unknown)(...args)]));
   set_page_api({ host: "web", calls: calls as unknown as Client<BudgetMethods>, device: null, backups: null, on_change: () => () => undefined });
   methods.set_setting("locale", "en-US");
