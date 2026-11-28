@@ -35,7 +35,7 @@
     "@modelcontextprotocol/server": "^2.4.0",
     "@sqlite.org/sqlite-wasm": "3.53.4-build2",
     "@x-tech-laboratories/halon": "^0.34.0",
-    "@x-tech-laboratories/x-libs": "^0.91.0",
+    "@x-tech-laboratories/x-libs": "^0.93.0",
     "fastify": "^5.12.8",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"

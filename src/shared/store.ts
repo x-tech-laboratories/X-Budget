@@ -8,9 +8,11 @@ import { migrate, type SqlDatabase } from "@x-tech-laboratories/x-libs/sql";
 import { create_sync_engine } from "@x-tech-laboratories/x-libs/sync_engine";
 
 import { budget_feature } from "./budget/store.ts";
-import { common_setting_defaults, read_setting, settings_feature } from "./settings.ts";
+import { create_settings_feature } from "./settings.ts";
 
 // ── Features ─────────────────────────────────────────────────────────────────
+
+export const { store: settings_store, feature: settings_feature } = create_settings_feature([budget_feature]);
 
 export const features = [settings_feature, budget_feature];
 
@@ -22,7 +24,7 @@ export const sync_engine = create_sync_engine({
   after_apply: (database) => histories.forEach((history) => history.forget_touched(database)),
 });
 
-export const setting_defaults = Object.assign({}, ...features.map((feature) => feature.setting_defaults ?? {})) as Record<string, unknown>;
+export const setting_defaults = settings_store.defaults;
 
 // ── Opening ──────────────────────────────────────────────────────────────────
 
@@ -48,7 +50,7 @@ export function open_store(database: SqlDatabase): void {
 
 // Versions older than the days set go, each item keeping its newest; 0 keeps them all.
 function prune_history(database: SqlDatabase): void {
-  const days = Math.floor(Number(read_setting(database, "history_days", common_setting_defaults.history_days)));
+  const days = Math.floor(Number(settings_store.value_of(database, "history_days")));
   if (!(days > 0)) return;
   const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
   for (const history of histories) history.prune(database, cutoff);

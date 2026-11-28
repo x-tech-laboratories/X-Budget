@@ -8,7 +8,7 @@ import { create_watch } from "@x-tech-laboratories/x-libs/web/watch";
 import { use_resource, type Resource } from "@x-tech-laboratories/x-libs/web/react/states";
 
 import type { PageApi } from "../shared/bridge.ts";
-import { is_read_only, setting_defaults, type BudgetMethods } from "../shared/store.ts";
+import { is_read_only, type BudgetMethods } from "../shared/store.ts";
 
 // ── Api ──────────────────────────────────────────────────────────────────────
 
@@ -50,7 +50,7 @@ export function use_data<Data>(load: (api: Client<BudgetMethods>) => Promise<Dat
   return use_resource(() => load(calls()), dependencies, { watch: data_watch });
 }
 
-// Every setting with the defaults filled in.
+// Every setting, the ones never set at their defaults.
 export function use_settings(): Resource<Record<string, unknown>> {
-  return use_data(async (api) => ({ ...setting_defaults, ...(await api.get_settings()) }));
+  return use_data((api) => api.get_settings());
 }

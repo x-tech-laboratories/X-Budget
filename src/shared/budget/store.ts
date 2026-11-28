@@ -5,11 +5,11 @@
 
 import { is_day, is_month, shift_month } from "@x-tech-laboratories/x-libs/dates";
 import { round_money } from "@x-tech-laboratories/x-libs/money";
+import { read_setting, settings_of } from "@x-tech-laboratories/x-libs/settings";
 import { in_transaction, type SqlDatabase, type SqlValue } from "@x-tech-laboratories/x-libs/sql";
 import { subtree_ids } from "@x-tech-laboratories/x-libs/web/tree";
 
 import { define_feature, new_id } from "../feature.ts";
-import { read_setting } from "../settings.ts";
 import {
   compute_totals,
   grand_totals,
@@ -72,18 +72,18 @@ export const budget_setting_defaults = {
 };
 
 function rollup_mode_of(database: SqlDatabase): RollupMode {
-  const mode = read_setting(database, "budget.rollup_mode", budget_setting_defaults["budget.rollup_mode"]);
+  const mode = read_setting(database, "budget.rollup_mode") ?? budget_setting_defaults["budget.rollup_mode"];
   return is_rollup_mode(mode) ? mode : "computed";
 }
 
 function trend_months_of(database: SqlDatabase): number {
-  const months = Math.floor(Number(read_setting(database, "budget.trend_months", budget_setting_defaults["budget.trend_months"])));
+  const months = Math.floor(Number(read_setting(database, "budget.trend_months") ?? budget_setting_defaults["budget.trend_months"]));
   return Number.isFinite(months) ? Math.min(Math.max(months, 1), 36) : 6;
 }
 
 // Amounts are kept to the places shown, so what is stored is what is seen.
 function amount_of(database: SqlDatabase, value: unknown): number {
-  return round_money(value, read_setting(database, "decimals", 2));
+  return round_money(value, read_setting(database, "decimals") ?? 2);
 }
 
 // ── Reading ──────────────────────────────────────────────────────────────────
@@ -332,5 +332,5 @@ export const budget_feature = define_feature({
         return { id, lines: read.lines.length, transactions: read.transactions.length, skipped: read.skipped };
       }),
   },
-  setting_defaults: budget_setting_defaults,
+  settings: settings_of(budget_setting_defaults),
 });
