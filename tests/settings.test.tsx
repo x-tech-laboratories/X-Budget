@@ -24,7 +24,7 @@ function fake_calls(saved: Record<string, unknown>): Client<BudgetMethods> {
   } as unknown as Client<BudgetMethods>;
 }
 
-const off = { state: "off", server_url: "", user: "", last_synced_at: "", pending_changes: 0, error: "" } as const;
+const off = { state: "off", device: "d1", name: "This device", addresses: [], peers: [], last_synced_at: "", pending_changes: 0, error: "" } as const;
 
 describe("settings", () => {
   it("shows how money is written and saves a new currency", async () => {
@@ -38,26 +38,51 @@ describe("settings", () => {
     expect(screen.queryByText("Sync")).toBeNull();
   });
 
-  it("offers sync on a device and signs in with the choice of copy once confirmed", async () => {
+  it("offers sync on a device and pairs with another device's code", async () => {
     const device = {
       get_sync_status: vi.fn(async () => off),
-      connect_sync: vi.fn(async () => ({ ...off, state: "idle", server_url: "https://budget.example.org/", user: "admin" })),
-      disconnect_sync: vi.fn(),
-      sync_now: vi.fn(),
+      create_pairing_code: vi.fn(async () => ({ code: "123-456", expires_at: "2099-01-01T00:00:00Z" })),
+      pair_device: vi.fn(async () => off),
+      remove_device: vi.fn(async () => off),
+      sync_now: vi.fn(async () => off),
     } as unknown as SyncDeviceClient;
     set_page_api({ host: "desktop", calls: fake_calls({}), device, backups: null, on_change: () => () => undefined });
     render(<><SettingsView /><Dialogs /></>);
 
-    fireEvent.change(await screen.findByLabelText("Server address"), { target: { value: "https://budget.example.org" } });
-    fireEvent.change(screen.getByLabelText("User name"), { target: { value: "admin" } });
-    fireEvent.change(screen.getByLabelText("Password"), { target: { value: "made-up password" } });
-    fireEvent.click(screen.getByRole("button", { name: "Use the server's budgets" }));
-    fireEvent.click(await screen.findByRole("button", { name: "Use the server's" }));
-    await waitFor(() => expect(device.connect_sync).toHaveBeenCalledWith("https://budget.example.org", expect.objectContaining({ name: "admin", password: "made-up password" }), "download"));
+    expect((await screen.findAllByText("Sync")).length).toBeGreaterThan(0);
+    await waitFor(() => expect(device.get_sync_status).toHaveBeenCalled());
+  });
+
+  it("shows the server's sync to an admin in a browser, and not to anyone else", async () => {
+    const device = { get_sync_status: vi.fn(async () => off), create_pairing_code: vi.fn(), pair_device: vi.fn(), remove_device: vi.fn(), sync_now: vi.fn() } as unknown as SyncDeviceClient;
+    set_page_api({ host: "web", calls: fake_calls({}), device, backups: null, on_change: () => () => undefined });
+    const { unmount } = render(<SettingsView is_admin={false} />);
+    expect((await screen.findAllByText("Money")).length).toBeGreaterThan(0);
+    expect(screen.queryByText("Keep the server's budgets alike with the devices paired with it.")).toBeNull();
+    unmount();
+
+    render(<SettingsView is_admin />);
+    expect(await screen.findByText("Keep the server's budgets alike with the devices paired with it.")).toBeTruthy();
+  });
+
+  it("lists the daemons a desktop window can work on, and its own settings", async () => {
+    const view = { connections: [{ id: "local", name: "This computer", kind: "local" as const, address: "", user: "" }], current: "local" };
+    const connections = { list_connections: vi.fn(async () => view), add_connection: vi.fn(), rename_connection: vi.fn(), remove_connection: vi.fn(), choose_connection: vi.fn() };
+    const desktop = {
+      get_desktop_settings: vi.fn(async () => ({ keep_running_in_background: true, start_at_login: true })),
+      set_desktop_setting: vi.fn(async () => undefined),
+      quit_completely: vi.fn(async () => undefined),
+    };
+    set_page_api({ host: "desktop", calls: fake_calls({}), device: null, backups: null, connections, desktop, on_change: () => () => undefined });
+    render(<><SettingsView /><Dialogs /></>);
+
+    expect(await screen.findByText("This computer")).toBeTruthy();
+    fireEvent.click(await screen.findByRole("switch", { name: "Keep running in the background" }));
+    await waitFor(() => expect(desktop.set_desktop_setting).toHaveBeenCalledWith("keep_running_in_background", false));
   });
 
   it("asks a phone for a backup folder before it backs up, and lists backups once one is picked", async () => {
-    const off = { state: "off", server_url: "", user: "", last_synced_at: "", pending_changes: 0, error: "" } as const;
+    const off = { state: "off", device: "d1", name: "This device", addresses: [], peers: [], last_synced_at: "", pending_changes: 0, error: "" } as const;
     const device = { get_sync_status: vi.fn(async () => off), connect_sync: vi.fn(), disconnect_sync: vi.fn(), sync_now: vi.fn() } as unknown as SyncDeviceClient;
     const backups = {
       list_backups: vi.fn(async () => []),

@@ -17,10 +17,13 @@ let
 
   state_directory = "/var/lib/x-budget";
 
-  config_file = (pkgs.formats.json { }).generate "x-budget.json" {
-    database = "${state_directory}/budget.db";
-    backups_folder = "${state_directory}/backups";
-  };
+  config_file = (pkgs.formats.json { }).generate "x-budget.json" (
+    {
+      database = "${state_directory}/budget.db";
+      backups_folder = "${state_directory}/backups";
+    }
+    // lib.optionalAttrs (cfg.syncAddress != null) { sync_address = cfg.syncAddress; }
+  );
 in
 {
   options.services.x-budget = {
@@ -45,7 +48,14 @@ in
       description = "Port the page, API and sync listen on.";
     };
 
-    openFirewall = mkOption {
+    syncAddress = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+      example = "https://budget.example.org/api/";
+      description = "Where devices reach this server's sync, ending in /api/; without it devices can still pair from a code made on another device.";
+    };
+
+        openFirewall = mkOption {
       type = types.bool;
       default = false;
       description = "Open the port in the firewall.";

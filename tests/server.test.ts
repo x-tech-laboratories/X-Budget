@@ -7,10 +7,13 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { FastifyInstance } from "fastify";
 
 import { AccountStore } from "@x-tech-laboratories/x-libs/server/account_store";
+import { EventStream } from "@x-tech-laboratories/x-libs/server/events";
 import { hash_password } from "@x-tech-laboratories/x-libs/server/passwords";
+import { create_sync_peer } from "@x-tech-laboratories/x-libs/sync_peer";
+import { file_sync_storage } from "@x-tech-laboratories/x-libs/sync_file_storage";
 
 import { build_app } from "../src/server/app.ts";
-import { open_store } from "../src/shared/store.ts";
+import { open_store, sync_engine } from "../src/shared/store.ts";
 
 let app: FastifyInstance;
 let cookie = "";
@@ -36,7 +39,15 @@ async function start(web_folder = "/nonexistent"): Promise<FastifyInstance> {
   const database = new DatabaseSync(":memory:");
   open_store(database);
   accounts = new AccountStore({ database: new DatabaseSync(":memory:"), app_name: "X-Budget", declared: new Map([["admin", hash_password(test_password)]]) });
-  app = await build_app({ database: () => database, accounts, web_folder, back_up: vi.fn(), backup_methods });
+  const sync = create_sync_peer({
+    app: "x-budget",
+    engine: sync_engine,
+    database: () => database,
+    storage: file_sync_storage({ file: join(mkdtempSync(join(tmpdir(), "x-budget-peers-")), "sync-peers.json"), back_up_before_replace: vi.fn() }),
+    device_name: "X-Budget test server",
+    addresses: () => ["https://budget.example.org/api/"],
+  });
+  app = await build_app({ database: () => database, accounts, web_folder, sync, changes: new EventStream(), backup_methods });
   const signed_in = await app.inject({ method: "POST", url: "/api/login", payload: { name: "admin", password: test_password } });
   cookie = signed_in.cookies.map((each) => `${each.name}=${each.value}`).join("; ");
   return app;
@@ -118,15 +129,15 @@ describe("server", () => {
     expect([400, 401]).toContain(refused.statusCode);
   });
 
-  it("serves sync to a device signed in with a token of its own", async () => {
+  it("answers a desktop app working on the server with a token of its own", async () => {
     await start();
-    const signed_in = await app.inject({ method: "POST", url: "/api/login", payload: { name: "admin", password: test_password, device: "Phone" } });
+    const signed_in = await app.inject({ method: "POST", url: "/api/login", payload: { name: "admin", password: test_password, device: "X-Budget on laptop" } });
     const device_token = (signed_in.json() as { token: string }).token;
-    const snapshot = await app.inject({ method: "GET", url: "/api/sync/snapshot", headers: { authorization: `Bearer ${device_token}` } });
-    expect(snapshot.statusCode).toBe(200);
-    const { generation, changes } = snapshot.json() as { generation: string; changes: { table: string; key: string }[] };
-    expect(generation).not.toBe("");
-    expect(changes).toContainEqual(expect.objectContaining({ table: "budgets", key: "main" }));
+
+    const listed = await app.inject({ method: "POST", url: "/api/call/list_budgets", payload: [], headers: { authorization: `Bearer ${device_token}` } });
+
+    expect(listed.statusCode).toBe(200);
+    expect(listed.json()).toEqual([expect.objectContaining({ id: "main" })]);
   });
 
   it("takes a call's arguments by name as a JSON object too", async () => {
@@ -134,6 +145,9 @@ describe("server", () => {
     expect((await call("set_setting", { value: "JMD", key: "currency" })).statusCode).toBe(204);
     expect((await call("get_settings", [])).json()).toMatchObject({ currency: "JMD", decimals: 2 });
     expect((await call("rename_budget", { id: "main" })).statusCode).toBe(400);
+    const not_a_list = await app.inject({ method: "POST", url: "/api/call/list_budgets", payload: "5", headers: { cookie, "content-type": "application/json" } });
+    expect(not_a_list.statusCode).toBe(400);
+    expect((await call("no_such_call", [])).statusCode).toBeGreaterThanOrEqual(400);
   });
 
   it("describes every call in an OpenAPI document", async () => {
@@ -153,5 +167,26 @@ describe("server", () => {
 
     await mcp("tools/call", { name: "rename_budget", arguments: { id: "main", name: "Household" } });
     expect((await call("list_budgets", [])).json()).toEqual([expect.objectContaining({ id: "main", name: "Household" })]);
+  });
+});
+
+describe("sync between devices", () => {
+  it("answers other devices' sealed calls without a sign-in", async () => {
+    await start();
+
+    const reply = await app.inject({ method: "POST", url: "/api/sync/peer", headers: { "content-type": "application/octet-stream" }, payload: Buffer.from("not sealed") });
+
+    expect(reply.statusCode).not.toBe(401);
+  });
+
+  it("shows the server's own pairing only to a signed-in admin", async () => {
+    await start();
+
+    const signed_out = await app.inject({ method: "POST", url: "/api/device/get_sync_status", payload: [] });
+    const admin = await app.inject({ method: "POST", url: "/api/device/create_pairing_code", payload: [], headers: { cookie } });
+
+    expect(signed_out.statusCode).toBe(401);
+    expect(admin.statusCode).toBe(200);
+    expect(JSON.parse(admin.body)).toHaveProperty("code");
   });
 });
