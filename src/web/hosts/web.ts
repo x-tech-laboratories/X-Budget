@@ -5,13 +5,14 @@
 
 import { LoginNeeded } from "@x-tech-laboratories/x-libs/web/states";
 
-import { backup_bridge, budget_bridge, type PageApi } from "../../shared/bridge.ts";
+import { backup_bridge, budget_bridge, device_bridge, type PageApi } from "../../shared/bridge.ts";
 
 // ── Server calls ─────────────────────────────────────────────────────────────
 
 // Relative, so a server behind a proxy under a folder keeps it.
 const call_path = "api/call/";
 const backups_path = "api/backups/";
+const device_path = "api/device/";
 const events_path = "api/events";
 const client_id_header = "x-client-id";
 
@@ -64,7 +65,8 @@ export function web_api(): PageApi {
   return {
     host: "web",
     calls: budget_bridge.web_rpc((method, args) => post_call(call_path, method, args)),
-    device: null,
+    // The server's own sync peer, which only an admin pairs.
+    device: device_bridge.web_rpc((method, args) => post_call(device_path, method, args)),
     // The server's backups, which only an admin reaches.
     backups: backup_bridge.web_rpc((method, args) => post_call(backups_path, method, args)),
     on_change: (listener) => {

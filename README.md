@@ -62,10 +62,22 @@ under **Settings**, and sync to every device.
 
 ## Sync
 
-In the desktop or Android app, open **Settings → This device → Sync**, enter the server's address, your name and
-password, and choose whether this device starts from the server's budgets or the server from this device's. The device
-keeps a token of its own, which **Your account** can revoke. The copy that loses is backed up
-first. After that, changes go both ways within seconds, and a device that is offline catches up once it is back.
+Every copy of the budgets is a peer of the others: the server, each desktop app and each phone. Pair two of them once
+under **Settings → Sync**: one shows a pairing code and the other enters it. The device showing the code must be one
+the other can reach, such as the server (set `sync_address` in its config, or `services.x-budget.syncAddress`) or a
+desktop app with **Let other devices connect** turned on. The two copies merge, and the newest change to each value
+wins. After that, changes go both ways within seconds, a device that is offline catches up once it is back, and each
+device passes on what it took from the others. In a browser the section shows the server's own pairings, for admins.
+
+## The desktop app and its daemon
+
+The desktop app is a window onto a daemon that holds the budgets, sync and backups. "This computer" is a daemon the
+window starts on its own Unix socket (`$XDG_RUNTIME_DIR/x-budget/daemon.sock`). It keeps running with the window closed
+unless **Settings → Desktop app → Keep running in the background** is off, and starts at login unless **Start at login**
+is off. **Quit completely** stops it too. `x-budget-desktop --daemon` starts only the daemon.
+
+Under **Settings → Connections** the window can work on an X-Budget server instead, signed in once with a name and
+password for a token of this device's own. The window then shows the server's budgets, as a browser does.
 
 ## Backups
 
@@ -119,7 +131,8 @@ desktop app.
 ```
 src/
   server/    Fastify app and main.ts
-  main/      Electron main process: its database, the page's calls, sync
+  daemon/    the desktop app's daemon: its database, sync and backups, served on a Unix socket
+  main/      Electron main process: the window, the login entry, and the page's calls passed to the chosen daemon
   preload/   the desktop page's bridge
   web/       the React page: budget/ for Plan, Transactions, Report and their settings, and hosts/ for web, desktop and Android
   shared/    the store every host runs, budget/ with its rules and the Trilium file format, and the bridge's method tables

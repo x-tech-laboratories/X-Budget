@@ -1,4 +1,4 @@
-// The phone's page: it keeps its own database, answers its calls on it, and syncs with a server when one is set.
+// The phone's page: it keeps its own database, answers its calls on it, and syncs with the devices it is paired with.
 
 // ── Imports ──────────────────────────────────────────────────────────────────
 
@@ -7,7 +7,7 @@ import type { Client } from "@x-tech-laboratories/x-libs/electron/bridge";
 import { keep_backing_up } from "@x-tech-laboratories/x-libs/backups";
 import { phone_backups } from "@x-tech-laboratories/x-libs/phone_backups";
 import { phone_certificates } from "@x-tech-laboratories/x-libs/phone_certificates";
-import { create_sync_client, sync_device_methods } from "@x-tech-laboratories/x-libs/sync_client";
+import { create_sync_peer, sync_device_methods } from "@x-tech-laboratories/x-libs/sync_peer";
 import { indexed_db_files, open_wasm_database } from "@x-tech-laboratories/x-libs/web/sqlite_wasm";
 import { local_sync_storage } from "@x-tech-laboratories/x-libs/web/sync_storage";
 
@@ -20,7 +20,7 @@ import { bind_methods, needs_upgrade, open_store, sync_engine, type BudgetMethod
 const files = indexed_db_files("x-budget");
 const database_file = "budget.db";
 const before_sync_file = "budget-before-sync.db";
-const sync_config_key = "x-budget-sync";
+const sync_peers_key = "x-budget-sync-peers";
 
 // ── Api ──────────────────────────────────────────────────────────────────────
 
@@ -55,11 +55,11 @@ export async function android_api(): Promise<PageApi> {
     for (const listener of listeners) listener();
   };
 
-  // The server and token stay in the app's private storage; before a download the data is backed up to the folder, or
-  // beside the database while there is none.
-  const back_up_before_download = async () => ((await has_folder()) ? void (await kept.create()) : files.write(before_sync_file, database.export_bytes()));
-  const storage = local_sync_storage({ key: sync_config_key, back_up_before_download });
-  const sync = create_sync_client({ engine: sync_engine, database: () => database.connection, storage, data_name: "budget data", on_remote_change: announce });
+  // The paired devices and keys stay in the app's private storage; before another copy replaces this one the data is
+  // backed up to the folder, or beside the database while there is none.
+  const back_up_before_replace = async () => ((await has_folder()) ? void (await kept.create()) : files.write(before_sync_file, database.export_bytes()));
+  const storage = local_sync_storage({ key: sync_peers_key, back_up_before_replace });
+  const sync = create_sync_peer({ app: "x-budget", engine: sync_engine, database: () => database.connection, storage, device_name: "X-Budget on Android", on_remote_change: announce });
 
   // A phone may close the app at any moment once it is in the background, so the database is saved straight away.
   void App.addListener("pause", () => void database.save_now());

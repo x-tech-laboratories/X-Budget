@@ -1,34 +1,40 @@
-// The web server: the page, every data call the page makes, and the sync every device runs against, all on one database.
+// The web server: the page, every data call the page makes, and the server's own sync peer, all on one database.
 
 // ── Imports ──────────────────────────────────────────────────────────────────
 
 import { readFileSync } from "node:fs";
 
 import fastify, { type FastifyInstance } from "fastify";
-import { openapi_document, positional_args } from "@x-tech-laboratories/x-libs/api_spec";
+import { openapi_document } from "@x-tech-laboratories/x-libs/api_spec";
 import { register_mcp_route } from "@x-tech-laboratories/x-libs/server/mcp";
-import { EventStream } from "@x-tech-laboratories/x-libs/server/events";
+import type { EventStream } from "@x-tech-laboratories/x-libs/server/events";
 import { BAD_JSON, register_error_replies, register_lenient_json_body, send_text } from "@x-tech-laboratories/x-libs/server/replies";
 import { register_accounts } from "@x-tech-laboratories/x-libs/server/account_sign_in";
 import type { AccountStore } from "@x-tech-laboratories/x-libs/server/account_store";
-import { register_sync_routes } from "@x-tech-laboratories/x-libs/server/sync_routes";
+import { register_sync_peer_routes } from "@x-tech-laboratories/x-libs/server/sync_peer_routes";
 import { register_web_folder } from "@x-tech-laboratories/x-libs/server/web_folder";
 import type { BackupMethods } from "@x-tech-laboratories/x-libs/backups";
 import type { SqlDatabase } from "@x-tech-laboratories/x-libs/sql";
 
 import { backup_bridge, budget_bridge } from "../shared/bridge.ts";
-import { bind_methods, budget_api_spec, is_read_only, sync_engine, type BudgetMethods } from "../shared/store.ts";
+import { register_call_table } from "@x-tech-laboratories/x-libs/server/call_table";
+import { sync_device_methods, type SyncPeer } from "@x-tech-laboratories/x-libs/sync_peer";
+
+import { bind_methods, budget_api_spec, is_read_only } from "../shared/store.ts";
+import { register_budget_calls } from "./calls.ts";
 
 // ── Options ──────────────────────────────────────────────────────────────────
 
 export interface AppOptions {
   // The open connection, which a restore replaces.
   database: () => SqlDatabase;
-  // Who may sign in: browsers with a session, and devices that sync with a token of their own.
+  // Who may sign in: browsers with a session, and desktop apps working on this server with a token of their own.
   accounts: AccountStore;
   web_folder: string;
-  // Saves a copy of the database before a device's data replaces it.
-  back_up: () => void | Promise<void>;
+  // The server's copy as a sync peer, which other devices pair with and send their sealed changes to.
+  sync: SyncPeer;
+  // Every page's event stream, also told when another device's changes arrived.
+  changes: EventStream;
   // The server's own backups, which only an admin reaches.
   backup_methods: BackupMethods;
 }
@@ -43,20 +49,10 @@ const instructions = [
   'Start with list_budgets (every device has the budget "main"), then get_budget_plan, list_budget_transactions and get_budget_report.',
 ].join(" ");
 
-// Turns a body into the call's arguments: a JSON list in order, or a JSON object by name.
-function call_args(method: string, body: unknown): unknown[] {
-  if (Array.isArray(body)) return body;
-  const spec = budget_api_spec[method as keyof BudgetMethods];
-  if (spec && typeof body === "object" && body !== null) return positional_args(spec, body as Record<string, unknown>);
-  throw new Error("send the arguments as a JSON list or object");
-}
-
 // ── App ──────────────────────────────────────────────────────────────────────
 
-// An import arrives as one call's argument.
-const import_body_limit = 32 * 1024 * 1024;
-
-const backup_path = "/api/backups/";
+// The server's backups and its sync peer's pairings, which only an admin reaches.
+const admin_paths = ["/api/backups/", "/api/device/"];
 
 export async function build_app(options: AppOptions): Promise<FastifyInstance> {
   const app = fastify({ forceCloseConnections: true });
@@ -65,34 +61,21 @@ export async function build_app(options: AppOptions): Promise<FastifyInstance> {
   await register_accounts(app, {
     accounts: options.accounts,
     cookie_name: "x_budget_session",
+    // Each peer call is sealed between the two devices, so it needs no sign-in.
+    open_paths: ["/api/sync/peer"],
     // A read-only token may still list and read through MCP, which posts every request.
     read_only_paths: ["/api/mcp"],
-    needed: (_method, path) => (path.startsWith(backup_path) ? { role: options.accounts.top_role } : "any"),
+    needed: (_method, path) => (admin_paths.some((admin_path) => path.startsWith(admin_path)) ? { role: options.accounts.top_role } : "any"),
   });
 
-  const changes = new EventStream();
+  const { changes } = options;
   const database = options.database;
 
   await app.register(
     async (api) => {
       changes.register(api, "/events");
 
-      // Calls arrive as POST /api/call/<method> with the arguments as a JSON list, or by name as a JSON object.
-      api.post<{ Params: { method: string } }>("/call/:method", { bodyLimit: import_body_limit }, async (request, reply) => {
-        let args: unknown[];
-        try {
-          args = call_args(request.params.method, request.body ?? []);
-        } catch (error) {
-          return send_text(reply, 400, (error as Error).message);
-        }
-        const methods = bind_methods(database, () => changes.announce_change(changes.client_id_of(request)));
-        const result = await budget_bridge.dispatch(methods, request.params.method, args);
-        if (result === undefined) return reply.code(204).send();
-        // Always JSON, since Fastify sends a bare string such as a new id as plain text the page cannot parse.
-        reply.type("application/json");
-        if (is_read_only(request.params.method)) reply.header("cache-control", "no-store");
-        return reply.send(JSON.stringify(result));
-      });
+      register_budget_calls(api, database, changes);
 
       api.get("/openapi.json", async () =>
         openapi_document(budget_api_spec, { title: "X-Budget", version, description: instructions, path_of: (method) => `/api/call/${method}`, is_read_only }),
@@ -117,12 +100,8 @@ export async function build_app(options: AppOptions): Promise<FastifyInstance> {
         return reply.type("application/json").header("cache-control", "no-store").send(JSON.stringify(result));
       });
 
-      register_sync_routes(api, {
-        engine: sync_engine,
-        database,
-        back_up: options.back_up,
-        on_change: (request) => changes.announce_change(changes.client_id_of(request)),
-      });
+      register_sync_peer_routes(api, options.sync);
+      register_call_table(api, "/device", sync_device_methods(options.sync), { is_read_only });
     },
     { prefix: "/api" },
   );
