@@ -1,0 +1,5 @@
+{
+  "extends": ["./tsconfig.base.json", "@x-tech-laboratories/x-app/config/tsconfig/web.json"],
+  "include": ["../src/app.ts", "../src/web", "../src/shared"],
+  "compilerOptions": { "tsBuildInfoFile": "../node_modules/.tmp/tsconfig.web.tsbuildinfo" }
+}

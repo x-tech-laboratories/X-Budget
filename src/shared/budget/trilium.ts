@@ -3,7 +3,7 @@
 
 // ── Imports ──────────────────────────────────────────────────────────────────
 
-import { is_day } from "@x-tech-laboratories/x-libs/dates";
+import { is_day } from "@x-tech-laboratories/x-app/dates";
 
 import { line_tree, type Amounts, type BudgetLine, type BudgetTransaction, type LineNode } from "./model.ts";
 

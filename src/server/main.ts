@@ -1,6 +1,6 @@
 // Starts the X-Budget web server on the database the config names.
 
-import { run_server } from "@x-tech-laboratories/x-libs/app/server";
+import { run_server } from "@x-tech-laboratories/x-app/app/server";
 
 import { app } from "../app.ts";
 

@@ -3,12 +3,12 @@
 
 // ── Imports ──────────────────────────────────────────────────────────────────
 
-import { define_feature } from "@x-tech-laboratories/x-libs/app/define";
-import { is_day, is_month, shift_month } from "@x-tech-laboratories/x-libs/dates";
-import { round_money } from "@x-tech-laboratories/x-libs/money";
-import { read_setting, settings_of } from "@x-tech-laboratories/x-libs/settings";
-import { in_transaction, type SqlDatabase, type SqlValue } from "@x-tech-laboratories/x-libs/sql";
-import { subtree_ids } from "@x-tech-laboratories/x-libs/web/tree";
+import { define_feature } from "@x-tech-laboratories/x-app/app/define";
+import { is_day, is_month, shift_month } from "@x-tech-laboratories/x-app/dates";
+import { round_money } from "@x-tech-laboratories/x-app/money";
+import { read_setting, settings_of } from "@x-tech-laboratories/x-app/settings";
+import { in_transaction, type SqlDatabase, type SqlValue } from "@x-tech-laboratories/x-app/sql";
+import { subtree_ids } from "@x-tech-laboratories/x-app/web/tree";
 
 import {
   compute_totals,

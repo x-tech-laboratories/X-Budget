@@ -1,0 +1,5 @@
+{
+  "extends": ["./tsconfig.base.json", "@x-tech-laboratories/x-app/config/tsconfig/node.json"],
+  "include": ["../src/app.ts", "../src/server", "../src/daemon", "../src/main", "../src/preload", "../src/shared", "vite.config.ts", "vite.android.config.ts", "electron.vite.config.ts", "vitest.config.ts"],
+  "compilerOptions": { "tsBuildInfoFile": "../node_modules/.tmp/tsconfig.node.tsbuildinfo" }
+}

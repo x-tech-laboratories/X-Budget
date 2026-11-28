@@ -23,7 +23,7 @@ add-on and reads and writes its JSON, so a budget moves between the two.
 ## Running it
 
 ```sh
-nix-shell                 # Node 24 and an Electron that runs on NixOS
+nix-shell nix/shell.nix   # Node 24 and an Electron that runs on NixOS (or nix develop ./nix)
 npm install
 npm run hash-password -- admin dev-data/password.hash   # the first admin, asked for a password
 npm run dev:server        # the server on http://127.0.0.1:7740, with the data in dev-data/
@@ -33,9 +33,9 @@ npm run dev               # the desktop app, with its profile in dev-data/deskto
 
 `npm run build` type-checks and builds the page into `out/web`; `npm start` serves it. `npm run build:desktop` builds
 the desktop app into `out/`, and `npm run build:android` builds the phone's page and copies it into `android/`
-(build the app itself in `nix develop .#android` with `cd android && ./gradlew assembleDebug`).
+(build the app itself in `nix develop ./nix#android` with `cd android && ./gradlew assembleDebug`).
 
-`npm test` runs the tests and `npm run coverage` runs them with coverage, raising the floor in `vitest.config.ts`; commit
+`npm test` runs the tests and `npm run coverage` runs them with coverage, raising the floor in `config/vitest.config.ts`; commit
 the raised floor. The floor only rises: CI fails when coverage drops below it or a raised floor is not committed.
 
 ## Configuration
@@ -114,7 +114,7 @@ before the add-on's 2.0, with one `amount` per row, read that amount as the expe
 ## NixOS
 
 ```nix
-inputs.x-budget.url = "github:x-tech-laboratories/X-Budget";
+inputs.x-budget.url = "github:x-tech-laboratories/X-Budget?dir=nix";
 
 imports = [ x-budget.nixosModules.default ];
 services.x-budget = {
@@ -130,7 +130,7 @@ desktop app.
 
 ```
 src/
-  app.ts     define_app: X-Budget as the X-Libs base app runs it
+  app.ts     define_app: X-Budget as the X-App base app runs it
   server/    main.ts, which runs the base's server, and hash_password.ts
   daemon/    main.ts, which runs the base's daemon
   main/      index.ts, which runs the base's desktop window
@@ -140,8 +140,12 @@ src/
 tests/       one *.test.ts per behaviour
 docs/        architecture.md
 android/     the Capacitor project
-nix/         package.nix, desktop-package.nix, module.nix
+config/      the Vite, electron-vite and Vitest configs and each target's tsconfig, all from X-App's presets
+nix/         app.nix, and flake.nix building it with X-App's Nix lib, with its flake.lock and shell.nix
 ```
+
+At the root stay only what the tools look for there: `package.json`, `tsconfig.json` (its references),
+`capacitor.config.json` and `config.example.json`.
 
 ## License
 

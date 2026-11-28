@@ -1,11 +1,11 @@
 // @vitest-environment jsdom
-import "@x-tech-laboratories/x-libs/web/react/test_stubs";
+import "@x-tech-laboratories/x-app/web/react/test_stubs";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import type { Client } from "@x-tech-laboratories/x-libs/electron/bridge";
-import { set_page_api } from "@x-tech-laboratories/x-libs/app/web/page";
-import { SettingsView } from "@x-tech-laboratories/x-libs/app/web/settings_page";
+import type { Client } from "@x-tech-laboratories/x-app/electron/bridge";
+import { set_page_api } from "@x-tech-laboratories/x-app/app/web/page";
+import { SettingsView } from "@x-tech-laboratories/x-app/app/web/settings_page";
 
 import { app, type BudgetMethods } from "../src/app.ts";
 import { pages } from "../src/web/pages.tsx";

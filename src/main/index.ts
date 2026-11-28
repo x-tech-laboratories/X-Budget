@@ -2,7 +2,7 @@
 // or to the X-Budget server chosen under Settings → Connections.
 
 import * as electron from "electron";
-import { run_desktop } from "@x-tech-laboratories/x-libs/app/desktop";
+import { run_desktop } from "@x-tech-laboratories/x-app/app/desktop";
 
 import { app } from "../app.ts";
 

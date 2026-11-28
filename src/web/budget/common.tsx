@@ -4,13 +4,13 @@
 // ── Imports ──────────────────────────────────────────────────────────────────
 
 import type { ReactNode } from "react";
-import { this_month } from "@x-tech-laboratories/x-libs/dates";
-import { format_money, money_decimals, money_step } from "@x-tech-laboratories/x-libs/money";
-import { Select } from "@x-tech-laboratories/x-libs/web/react/controls";
-import { PageHeading } from "@x-tech-laboratories/x-libs/web/react/layout";
-import { use_pref } from "@x-tech-laboratories/x-libs/web/react/prefs";
-import { Empty, Loaded } from "@x-tech-laboratories/x-libs/web/react/states";
-import { create_store, use_store } from "@x-tech-laboratories/x-libs/web/react/store";
+import { this_month } from "@x-tech-laboratories/x-app/dates";
+import { format_money, money_decimals, money_step } from "@x-tech-laboratories/x-app/money";
+import { Select } from "@x-tech-laboratories/x-app/web/react/controls";
+import { PageHeading } from "@x-tech-laboratories/x-app/web/react/layout";
+import { use_pref } from "@x-tech-laboratories/x-app/web/react/prefs";
+import { Empty, Loaded } from "@x-tech-laboratories/x-app/web/react/states";
+import { create_store, use_store } from "@x-tech-laboratories/x-app/web/react/store";
 
 import type { BudgetSummary } from "../../shared/budget/store.ts";
 import { use_data, use_settings } from "../api.ts";

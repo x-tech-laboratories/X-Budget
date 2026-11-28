@@ -11,23 +11,12 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
-        env:
-          ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
-      - run: npm run build
-      - run: npm run coverage
-      - run: git diff --exit-code vitest.config.ts
-      - run: npm run lint
+      - uses: x-tech-laboratories/X-App/.github/actions/app-ci@main
 
   # Builds the package TechNet deploys and the desktop app, so a dependency bump that breaks either fails here.
   nix:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: cachix/install-nix-action@v31
-      - run: nix build .#default .#desktop
+      - uses: x-tech-laboratories/X-App/.github/actions/app-nix@main
+        with:
+          targets: ./nix#default ./nix#desktop

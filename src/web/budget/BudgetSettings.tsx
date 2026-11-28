@@ -4,17 +4,17 @@
 // ── Imports ──────────────────────────────────────────────────────────────────
 
 import { useRef, useState } from "react";
-import { CommitInput, NumberField, Select } from "@x-tech-laboratories/x-libs/web/react/controls";
-import { confirm_dialog } from "@x-tech-laboratories/x-libs/web/react/dialog";
-import { SettingRow, type SettingsSection } from "@x-tech-laboratories/x-libs/web/react/layout";
-import { Loaded } from "@x-tech-laboratories/x-libs/web/react/states";
-import { toast } from "@x-tech-laboratories/x-libs/web/react/toasts";
-import { attempt } from "@x-tech-laboratories/x-libs/web/react/toasts";
+import { CommitInput, NumberField, Select } from "@x-tech-laboratories/x-app/web/react/controls";
+import { confirm_dialog } from "@x-tech-laboratories/x-app/web/react/dialog";
+import { SettingRow, type SettingsSection } from "@x-tech-laboratories/x-app/web/react/layout";
+import { Loaded } from "@x-tech-laboratories/x-app/web/react/states";
+import { toast } from "@x-tech-laboratories/x-app/web/react/toasts";
+import { attempt } from "@x-tech-laboratories/x-app/web/react/toasts";
 
 import { is_rollup_mode, type RollupMode } from "../../shared/budget/model.ts";
 import type { BudgetSummary } from "../../shared/budget/store.ts";
 import { calls, use_data } from "../api.ts";
-import type { PageSettingsProps } from "@x-tech-laboratories/x-libs/app/web/app_page";
+import type { PageSettingsProps } from "@x-tech-laboratories/x-app/app/web/app_page";
 
 // ── Parent totals ────────────────────────────────────────────────────────────
 

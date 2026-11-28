@@ -2,12 +2,12 @@
 
 ## The base app
 
-X-Budget runs on the base app in X-Libs (`app/*`). `src/app.ts` describes it once with `define_app`: its name, ports
+X-Budget runs on the base app in X-App (`app/*`). `src/app.ts` describes it once with `define_app`: its name, ports
 and files, the money settings, and the budget feature. Each entry point is one call into the base with that object:
 `run_server` in `src/server/main.ts`, `run_daemon` in `src/daemon/main.ts`, `run_desktop` and `run_preload` for the
 desktop app, and `render_app` in `src/web/main.tsx` with the pages and the Money section. The server, the daemon, the
 window, the hosts, the layout, sign-in and Settings all come from the base; a change X-Budget needs there goes into
-X-Libs, never into a copy here.
+X-App, never into a copy here.
 
 ## One page, three hosts
 
@@ -18,7 +18,7 @@ and hands the page a `PageApi`:
 | ------- | --------------------------------------------------- | -------------------------------------------------------------------------- | ----------------------------------- |
 | web     | the server's SQLite file                            | `POST api/call/<method>` with the arguments as JSON                        | the server's own `sync_peer`        |
 | desktop | the chosen daemon's: this computer's or a server's  | IPC through the preload to the main process, then to the daemon            | the local daemon's `sync_peer`      |
-| android | SQLite in WebAssembly, saved to IndexedDB           | straight to the store in the same page                                     | X-Libs `sync_peer` in the page      |
+| android | SQLite in WebAssembly, saved to IndexedDB           | straight to the store in the same page                                     | X-App `sync_peer` in the page      |
 
 ## The desktop app
 
@@ -27,9 +27,9 @@ folder, runs sync and backups, and serves the same `api/call/<method>` routes as
 `device`, `peer_listening`, `certificates`, `backups` and `daemon` call tables. It runs on Electron's binary as Node
 and keeps running with the window closed.
 
-`src/main/index.ts` is only the window. It starts the local daemon, keeps the list of daemons in X-Libs `connections`
+`src/main/index.ts` is only the window. It starts the local daemon, keeps the list of daemons in X-App `connections`
 (This computer, or X-Budget servers signed in to as this device), and passes every call of the page to the chosen one
-through X-Libs `daemon_router`. The device's sync, certificates and own settings always go to this computer's daemon.
+through X-App `daemon_router`. The device's sync, certificates and own settings always go to this computer's daemon.
 Choosing another daemon reloads the window, and the base's desktop host reads which one it is on: on a server's, the
 page shows no device sync and treats backups as the server's.
 
@@ -44,7 +44,7 @@ device changed something.
 - `model.ts`: the rules, as plain functions over lines and transactions. `compute_totals` gives each line's totals
   under the parent rule (computed, own plus children, or cap); `monthly_report` measures a month and `monthly_trend` the
   months before it.
-- `store.ts`: the tables and the calls the page makes. Lines keep `parent_id` and `position`, so X-Libs `web/tree`
+- `store.ts`: the tables and the calls the page makes. Lines keep `parent_id` and `position`, so X-App `web/tree`
   nests them and works out moves. Totals are never stored; only what was typed is, rounded to the decimal places set.
 - `trilium.ts`: the Trilium Budget add-on's JSON, read into a new budget and written back.
 - `history.ts`: the versions kept of lines and transactions (see History below).
@@ -77,7 +77,7 @@ currency.
 
 ## Sync
 
-The server and every device run the same store, and each is a peer of the others through X-Libs `sync_peer`. X-Libs
+The server and every device run the same store, and each is a peer of the others through X-App `sync_peer`. X-App
 `sync_engine` stamps every write to a synced table through triggers, value by value; the newest write of each value
 wins. Two copies pair once through a code shown by the one the other can reach, then merge with nothing asked. Each
 sends its changes within seconds, takes the other's in the same round trip, and keeps working offline. The server
@@ -87,7 +87,7 @@ rather than holding one copy each.
 
 ## Signing in
 
-In a browser the page reaches the server's data, so the base's page checks the account first and shows X-Libs'
+In a browser the page reaches the server's data, so the base's page checks the account first and shows X-App'
 `SignInForm` until the user is signed in; the server runs `register_accounts` on an `AccountStore` kept in
 `accounts.db`, apart from the budgets so a restore never changes who can sign in. Admins come from the
 `X_BUDGET_PASSWORD_HASH_FILE` file and manage everyone else on **Your account**. A desktop app that works on a server
@@ -96,7 +96,7 @@ signs in once under Settings → Connections for a token of its own; sync itself
 ## Backups
 
 The base keeps what every host's backups share: the names, this device's schedule (a settings row the sync engine keeps
-local) and the page's backup calls. The server and the desktop app open their database on X-Libs' `sqlite_backups`; the phone keeps its backups in a folder it picks through X-Libs'
+local) and the page's backup calls. The server and the desktop app open their database on X-App's `sqlite_backups`; the phone keeps its backups in a folder it picks through X-App'
 `phone_backups`. Each takes a daily backup through `keep_backing_up`, one before a schema upgrade and one before another
 copy replaces its data; a restore backs up first, and each paired device is then made to match the restored copy.
 
@@ -108,7 +108,7 @@ by the device that made it, and prunes versions older than the `history_days` se
 
 ## API and MCP
 
-Every call is described once in its feature's `api` (an X-Libs `ApiSpec`, typed against the calls, so one without a
+Every call is described once in its feature's `api` (an X-App `ApiSpec`, typed against the calls, so one without a
 description does not compile). The server serves the calls three ways from it, behind the same sign-in: `POST
 /api/call/<method>` with the arguments as a JSON list or by name as an object, `GET /api/openapi.json`, and `/api/mcp`
 for MCP clients, where reading calls are marked read-only. A change made through the API or MCP reaches open pages and
