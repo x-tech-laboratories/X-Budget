@@ -3,9 +3,10 @@
 // ── Imports ──────────────────────────────────────────────────────────────────
 
 import { backup_naming, default_backup_schedule, type BackupMethods, type BackupSchedule, type Backups } from "@x-tech-laboratories/x-libs/backups";
+import { read_setting, write_setting } from "@x-tech-laboratories/x-libs/settings";
 import type { SqlDatabase } from "@x-tech-laboratories/x-libs/sql";
 
-import { backup_schedule_key, read_setting } from "./settings.ts";
+import { backup_schedule_key } from "./settings.ts";
 
 // ── Names ────────────────────────────────────────────────────────────────────
 
@@ -21,13 +22,13 @@ export function is_backup_schedule(value: unknown): value is BackupSchedule {
 
 // This device's schedule, kept in a settings row that never syncs.
 export function read_backup_schedule(database: SqlDatabase): BackupSchedule {
-  const stored = read_setting(database, backup_schedule_key, default_backup_schedule);
+  const stored = read_setting(database, backup_schedule_key);
   return is_backup_schedule(stored) ? stored : default_backup_schedule;
 }
 
 function write_backup_schedule(database: SqlDatabase, schedule: BackupSchedule): void {
   if (!is_backup_schedule(schedule)) throw new Error("A schedule needs automatic as true or false and a whole number to keep.");
-  database.prepare("INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value").run(backup_schedule_key, JSON.stringify(schedule));
+  write_setting(database, backup_schedule_key, schedule);
 }
 
 // ── Calls ────────────────────────────────────────────────────────────────────

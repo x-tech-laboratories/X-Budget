@@ -1,15 +1,15 @@
-// Settings every device shares, such as the currency amounts are shown in, kept as JSON values by key so each feature
-// can add its own.
+// Settings every device shares, such as the currency amounts are shown in, kept as JSON values by key in the X-Libs
+// settings store, each feature declaring its own keys.
 
 // ── Imports ──────────────────────────────────────────────────────────────────
 
-import type { SqlDatabase } from "@x-tech-laboratories/x-libs/sql";
+import { create_settings_store, settings_of, type SettingSpec } from "@x-tech-laboratories/x-libs/settings";
 
 import { define_feature } from "./feature.ts";
 
 // ── Settings ─────────────────────────────────────────────────────────────────
 
-export type Settings = Record<string, unknown>;
+export type { Settings } from "@x-tech-laboratories/x-libs/settings";
 
 export const common_setting_defaults = {
   // An ISO 4217 code such as "USD" or "JMD".
@@ -20,43 +20,29 @@ export const common_setting_defaults = {
   decimals: 2,
   // How many days of changes the history keeps, each item keeping its newest version; 0 keeps them all.
   history_days: 365,
-} satisfies Settings;
+};
 
 // The settings row holding this device's backup schedule.
 export const backup_schedule_key = "backup_schedule";
 
-// One stored value, or the fallback when it was never set.
-export function read_setting(database: SqlDatabase, key: string, fallback: unknown): unknown {
-  const row = database.prepare("SELECT value FROM settings WHERE key = ?").get(key) as { value: string } | undefined;
-  return row ? JSON.parse(row.value) : fallback;
-}
+const common_settings: Record<string, SettingSpec> = {
+  ...settings_of(common_setting_defaults),
+  // How this device backs up is its own, never synced.
+  [backup_schedule_key]: { local: true },
+};
 
 // ── Store ────────────────────────────────────────────────────────────────────
 
-export const settings_feature = define_feature({
-  id: "settings",
-  migrations: [`CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)`],
-  // How this device backs up is its own, never synced.
-  tables: [{ name: "settings", key_columns: ["key"], local_keys: [backup_schedule_key] }],
-  methods: {
-    // Only the values set; the page lays them over the defaults.
-    get_settings: (database: SqlDatabase): Settings => {
-      const rows = database.prepare("SELECT key, value FROM settings").all() as { key: string; value: string }[];
-      return Object.fromEntries(rows.map((row) => [row.key, JSON.parse(row.value)]));
+// The settings feature over every other feature's settings, so they share one table and one set of calls.
+export function create_settings_feature(features: readonly { settings?: Record<string, SettingSpec> }[]) {
+  const store = create_settings_store([common_settings, ...features.map((feature) => feature.settings ?? {})], {
+    app: { id: "x-budget", name: "X-Budget" },
+    descriptions: {
+      get_settings: "Every setting by key, such as currency, decimals and budget.rollup_mode, the ones never set at their defaults.",
+      set_setting: "Sets one setting, such as currency to JMD or budget.rollup_mode to cap.",
     },
-    set_setting: (database: SqlDatabase, key: string, value: unknown): void => {
-      database.prepare("INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value").run(key, JSON.stringify(value));
-    },
-  },
-  api: {
-    get_settings: { description: "Gives the settings that were set, by key, such as currency, decimals and budget.rollup_mode; any key missing has its default.", params: [] },
-    set_setting: {
-      description: "Sets one setting, such as currency to JMD or budget.rollup_mode to cap.",
-      params: [
-        { name: "key", schema: { type: "string", description: "The setting's key." } },
-        { name: "value", schema: { description: "Its new value, as JSON." } },
-      ],
-    },
-  },
-  setting_defaults: common_setting_defaults,
-});
+    key_example: "currency",
+  });
+  const feature = define_feature({ id: store.id, migrations: store.migrations.map(String), tables: store.tables, methods: { ...store.methods }, api: store.api });
+  return { store, feature };
+}
